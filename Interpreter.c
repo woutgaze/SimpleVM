@@ -284,75 +284,99 @@ void interpretNext(Frame *frame) {
             popAndStoreTemporaryLocation(frame, (byte & 0b00000111));
             return;
         case 112:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushReceiver(frame);
             return;
         case 113:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushTrue(frame);
             return;
         case 114:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushFalse(frame);
             return;
         case 115:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushNil(frame);
             return;
         case 116:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushMinusOne(frame);
             return;
         case 117:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushZero(frame);
             return;
         case 118:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushOne(frame);
             return;
         case 119:
+            // Push (receiver, true, false, nil, -1, 0, 1, 2) [iii]
             pushTwo(frame);
             return;
         case 120:
+            // Return (receiver, true, false, nil) [ii] From Message
             returnReceiver(frame);
             return;
         case 121:
+            // Return (receiver, true, false, nil) [ii] From Message
             returnTrue(frame);
             return;
         case 122:
+            // Return (receiver, true, false, nil) [ii] From Message
             returnFalse(frame);
             return;
         case 123:
+            // Return (receiver, true, false, nil) [ii] From Message
             returnNil(frame);
             return;
         case 124:
+            // Return Stack Top From (Message, Block) [i]
             returnStackTopFromMessage(frame);
             return;
         case 125:
+            // Return Stack Top From (Message, Block) [i]
             returnStackTopFromBlock(frame);
             return;
         case 128:
+            // Push (Receiver Variable, Temporary Location, Literal Constant, Literal Variable) [jj] #kkkkkk
             extendedPush(frame);
             return;
         case 129:
+            // Store (Receiver Variable, Temporary Location, Illegal, Literal Variable) [jj] #kkkkkk
             extendedStore(frame);
             return;
         case 130:
+            // Pop and Store (Receiver Variable, Temporary Location, Illegal, Literal Variable) [jj] #kkkkkk
             extendedPopAndStore(frame);
             return;
         case 131:
+            // Send Literal Selector #kkkkk With jjj Arguments
             sendShort(frame);
             return;
         case 132:
+            // Send Literal Selector #kkkkkkkk With jjjjjjjj Arguments
             sendLong(frame);
             return;
         case 133:
+            // Send Literal Selector #kkkkk To Superclass With jjj Arguments
             superSendShort(frame);
             return;
         case 134:
+            // Send Literal Selector #kkkkkkkk To Superclass With jjjjjjjj Arguments
             superSendLong(frame);
             return;
         case 135:
+            // Pop Stack Top
             popStackTop(frame);
             return;
         case 136:
+            // Duplicate Stack Top
             duplicateStackTop(frame);
             return;
         case 137:
+            // Push Active Context
             pushActiveContext(frame);
             return;
         case 144:

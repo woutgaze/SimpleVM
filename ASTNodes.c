@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "ASTNodes.h"
+#include "Bytecodes.h"
 
 Node *newInt(int val) {
     IntNode *node = (IntNode *) malloc(sizeof(IntNode));
@@ -45,16 +46,17 @@ typedef struct Compiler {
 
 void compileNode(Compiler *compiler, Node *node);
 
+void emit(Compiler *compiler, uint8_t byte) {
+    compiler->bytecode[compiler->ip++] = byte;
+}
+
 uint8_t *compile(Node *node) {
     Compiler compiler;
     compiler.bytecode = calloc(1000, 1);
     compiler.ip = 0;
     compileNode(&compiler, node);
+    emit(&compiler, RETURN_STACK_TOP_FROM_MESSAGE);
     return compiler.bytecode;
-}
-
-void emit(Compiler *compiler, uint8_t byte) {
-    compiler->bytecode[compiler->ip++] = byte;
 }
 
 void compile_IntNode(Compiler *compiler, IntNode *node) {
@@ -62,11 +64,13 @@ void compile_IntNode(Compiler *compiler, IntNode *node) {
 }
 
 void compile_PrimAddNode(Compiler *compiler, PrimAddNode *node) {
-    niy();
+    compileNode(compiler, node->left);
+    compileNode(compiler, node->right);
+    emit(compiler, SEND);
 }
 
 void compile_ReadInstVarNode(Compiler *compiler, ReadInstVarNode *node) {
-    niy();
+    emit(compiler, PUSH_RECEIVER_VARIABLE_START + node->index);
 }
 
 void compile_UnaryMessageNode(Compiler *compiler, UnaryMessageNode *node) {
