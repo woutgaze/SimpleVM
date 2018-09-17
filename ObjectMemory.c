@@ -59,7 +59,7 @@ Method *createMethod(const char *selector, Node *node) {
     Method *method = (Method *) malloc(sizeof(Method));
 
     method->name = selector;
-    method->node = node;
+    method->bytecode = compile(node);
     return method;
 }
 

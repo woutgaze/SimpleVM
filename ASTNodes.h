@@ -4,6 +4,9 @@
 
 #ifndef SIMPLEVM_ASTNODES_H
 #define SIMPLEVM_ASTNODES_H
+
+#include <stdint.h>
+
 #define INT_NODE 0
 #define PRIM_ADD_NODE 1
 #define READ_INST_VAR_NODE 2
@@ -49,5 +52,7 @@ Node *newReadInstVar(int index);
 Node *newUnaryMessage(Node *receiver, const char *selector);
 
 Node *newSelf();
+
+uint8_t* compile(Node *node);
 
 #endif //SIMPLEVM_ASTNODES_H

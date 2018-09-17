@@ -6,6 +6,7 @@
 #define SIMPLEVM_OBJECTMEMORY_H
 
 #include <stdlib.h>
+#include <stdint.h>
 #include "ASTNodes.h"
 
 typedef struct Class Class;
@@ -20,7 +21,7 @@ typedef struct ObjectTableEntry {
 
 typedef struct {
     const char *name;
-    Node *node;
+    uint8_t* bytecode;
 } Method;
 
 typedef struct Class {

@@ -6,6 +6,7 @@
 #define SIMPLEVM_INTERPRETER_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include "ASTNodes.h"
 #include "ObjectMemory.h"
 
@@ -13,9 +14,13 @@ typedef struct Frame {
     Object *self;
     ObjectPointer selfp;
     ObjectMemory *objectmemory;
+    Method *method;
+    uint16_t ip;
+    bool hasReturned;
+    ObjectPointer returnValue;
 } Frame;
 
-ObjectPointer evaluate(Frame *frame, Node *node);
+ObjectPointer evaluate(Frame *frame);
 
 Method *lookupSelector(Class *class, const char *selector);
 

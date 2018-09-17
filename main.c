@@ -26,17 +26,6 @@ void test_createObject() {
     printf("w value: %d\n", (getInt(w)));
 }
 
-void test_evaluate() {
-    ObjectMemory *om = createObjectMemory();
-    ObjectPointer values[] = {registerInt(3), registerInt(4)};
-
-    ObjectPointer op = createObject(om, NULL, 2, values);
-
-    Node *addMethod = newPrimAdd(newReadInstVar(0), newReadInstVar(1));
-    ObjectPointer v = evaluateNode(om, op, addMethod);
-    printf("v value: %d\n", (getInt(v)));
-}
-
 void test_sendmessage() {
     ObjectMemory *om = createObjectMemory();
     Node *node = newPrimAdd(newReadInstVar(0), newReadInstVar(1));
@@ -74,7 +63,6 @@ void runTest(const char * label, void (*testFN)()) {
 int main() {
     runTest("test_addEntryToObjectTable", test_addEntryToObjectTable);
     runTest("test_createObject", test_createObject);
-    runTest("test_evaluate", test_evaluate);
     runTest("test_sendmessage", test_sendmessage);
     runTest("test_dispatch", test_dispatch);
 
