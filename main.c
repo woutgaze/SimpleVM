@@ -3,7 +3,6 @@
 #include "Interpreter.h"
 
 void test_addEntryToObjectTable() {
-    printf("test_addEntryToObjectTable\n");
     ObjectMemory *om = createObjectMemory();
     printf("X: %d\n", sizeof(size_t));
 
@@ -14,7 +13,6 @@ void test_addEntryToObjectTable() {
 }
 
 void test_createObject() {
-    printf("test_createObject\n");
     ObjectMemory *om = createObjectMemory();
     printf("X: %d\n", sizeof(size_t));
 
@@ -29,7 +27,6 @@ void test_createObject() {
 }
 
 void test_evaluate() {
-    printf("test_evaluate\n");
     ObjectMemory *om = createObjectMemory();
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
 
@@ -41,7 +38,6 @@ void test_evaluate() {
 }
 
 void test_sendmessage() {
-    printf("test_sendmessage\n");
     ObjectMemory *om = createObjectMemory();
     Node *node = newPrimAdd(newReadInstVar(0), newReadInstVar(1));
     Method *methods[] = {createMethod("add", node)};
@@ -55,9 +51,7 @@ void test_sendmessage() {
 }
 
 void test_dispatch() {
-    printf("test_dispatch\n");
     ObjectMemory *om = createObjectMemory();
-    Method *method = createMethod("add", newPrimAdd(newReadInstVar(0), newReadInstVar(1)));
     Method *methods[] = {createMethod("add", newPrimAdd(newReadInstVar(0), newReadInstVar(1))),
                          createMethod("execute", newUnaryMessage(newSelf(), "add"))
     };
@@ -70,12 +64,19 @@ void test_dispatch() {
     printf("v value: %d\n", (getInt(v)));
 }
 
+
+void runTest(const char * label, void (*testFN)()) {
+    printf("Starting %s\n", label);
+    (*testFN)();
+    printf("Done %s\n\n", label);
+}
+
 int main() {
-    test_addEntryToObjectTable();
-    test_createObject();
-    test_evaluate();
-    test_sendmessage();
-    test_dispatch();
+    runTest("test_addEntryToObjectTable", test_addEntryToObjectTable);
+    runTest("test_createObject", test_createObject);
+    runTest("test_evaluate", test_evaluate);
+    runTest("test_sendmessage", test_sendmessage);
+    runTest("test_dispatch", test_dispatch);
 
     printf("Done\n");
 }

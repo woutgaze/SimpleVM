@@ -64,6 +64,7 @@ ObjectPointer evaluateNode(ObjectMemory *om, ObjectPointer selfp, Node *node) {
 ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, const char *selector) {
     Object *self = getObject(om, selfp);
     Method *method = lookupSelector(self->class, selector);
+
     Frame frame;
     frame.self = self;
     frame.selfp = selfp;
