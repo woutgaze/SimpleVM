@@ -1,7 +1,6 @@
 #include "ObjectMemory.h"
 #include <stdio.h>
 #include <stdbool.h>
-#include <mem.h>
 
 const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
 
