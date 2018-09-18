@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "Interpreter.h"
+#include "DevTools.h"
 
 
 ObjectPointer evaluate(Frame *frame, Node *node);
@@ -93,7 +94,37 @@ ObjectPointer evaluate_WhileTrueNode(Frame *frame, WhileTrueNode *node) {
     return frame->objectmemory->nilValue;
 }
 
+ObjectPointer evaluate_ArrayConstructionNode(Frame *frame, ArrayConstructionNode *node) {
+    Class * arrayClass = frame->objectmemory->arrayClass;
+    Object * obj = newObject(arrayClass, NULL, node->elements.size);
+    for (int i = 0; i < node->elements.size; i++) {
+        ObjectPointer result = evaluate(frame, node->elements.elements[i]);
+        noCheckSetIndexed(obj, i,  arrayClass->instVarSize, result);
 
+    }
+    return registerObject(frame->objectmemory, obj);
+}
+
+ObjectPointer evaluate_ReadIndexedNode(Frame *frame, ReadIndexedNode *node) {
+    return getIndexed(frame->self, node->index);
+}
+
+ObjectPointer evaluate_WriteIndexedNode(Frame *frame, WriteIndexedNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    setIndexed(frame->self, node->index, value);
+    return value;
+}
+
+ObjectPointer evaluate_PrimGetArraySizeNode(Frame *frame, PrimGetArraySizeNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    size_t size = getIndexedSize(getObject(frame->objectmemory, value));
+    return registerInt(size);
+}
+
+ObjectPointer evaluate_PrimArrayAtNode(Frame *frame, PrimArrayAtNode *node) {
+    Object * obj = getObject(frame->objectmemory, evaluate(frame, node->value));
+    return getIndexed(obj, node->index);
+}
 
 ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
@@ -127,6 +158,16 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_SequenceNode(frame, (SequenceNode *) node);
         case PRIM_NOT_NODE:
             return evaluate_PrimNotNode(frame, (PrimNotNode *) node);
+        case ARRAY_CONSTRUCTION_NODE:
+            return evaluate_ArrayConstructionNode(frame, (ArrayConstructionNode *) node);
+        case READ_INDEXED_NODE:
+            return evaluate_ReadIndexedNode(frame, (ReadIndexedNode *) node);
+        case WRITE_INDEXED_NODE:
+            return evaluate_WriteIndexedNode(frame, (WriteIndexedNode *) node);
+        case PRIM_GET_ARRAY_SIZE_NODE:
+            return evaluate_PrimGetArraySizeNode(frame, (PrimGetArraySizeNode *) node);
+        case PRIM_ARRAY_AT_NODE:
+            return evaluate_PrimArrayAtNode(frame, (PrimArrayAtNode *) node);
     }
     fprintf(stderr, "Invalid type.\n");
     exit(-1);

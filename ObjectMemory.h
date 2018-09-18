@@ -22,7 +22,7 @@ typedef struct ObjectTableEntry {
 typedef struct {
     const char *name;
     Node *node;
-    int numArgs;
+    size_t numArgs;
 } Method;
 
 typedef struct Class {
@@ -31,6 +31,7 @@ typedef struct Class {
     size_t instVarSize;
     Method **methods;
     size_t methodsSize;
+    bool isObjectIndexed;
 } Class;
 
 typedef struct {
@@ -47,6 +48,7 @@ typedef struct {
     ObjectPointer nilValue;
     ObjectPointer trueValue;
     ObjectPointer falseValue;
+    Class * arrayClass;
 } ObjectMemory;
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc);
@@ -62,15 +64,20 @@ ObjectPointer registerInt(int value);
 int getInt(ObjectPointer p);
 bool getBool(ObjectMemory * om , ObjectPointer p);
 
+ObjectPointer getInstVar(Object *obj, int instVarIndex);
 void setInstVar(Object *obj, int instVarIndex, ObjectPointer a);
 
-ObjectPointer getInstVar(Object *obj, int instVarIndex);
+ObjectPointer getIndexed(Object *obj, size_t instVarIndex);
+void setIndexed(Object *obj, size_t index, ObjectPointer a);
+void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPointer a);
+size_t getIndexedSize(Object *obj);
 
-ObjectPointer createObject(ObjectMemory *om, Class *class, int instVarCount, ObjectPointer values[]);
+ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize);
+Object * newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
 Method *createMethod(const char *selector, Node *node, int numArgs);
 
-Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize);
+Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, bool isObjectIndexed);
 
 ObjectMemory *createObjectMemory();
 

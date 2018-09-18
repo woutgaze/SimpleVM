@@ -128,3 +128,41 @@ Node *newPrimNot(Node * value) {
     return (Node *) node;
 }
 
+Node *newArrayConstruction(Node ** elements, uint32_t elements_size) {
+    ArrayConstructionNode *node = (ArrayConstructionNode *) malloc(sizeof(ArrayConstructionNode));
+    node->super.type = ARRAY_CONSTRUCTION_NODE;
+    node->elements.elements = elements;
+        node->elements.size = elements_size;
+    return (Node *) node;
+}
+
+Node *newReadIndexed(uint32_t index) {
+    ReadIndexedNode *node = (ReadIndexedNode *) malloc(sizeof(ReadIndexedNode));
+    node->super.type = READ_INDEXED_NODE;
+    node->index = index;
+    return (Node *) node;
+}
+
+Node *newWriteIndexed(uint32_t index, Node * value) {
+    WriteIndexedNode *node = (WriteIndexedNode *) malloc(sizeof(WriteIndexedNode));
+    node->super.type = WRITE_INDEXED_NODE;
+    node->index = index;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newPrimGetArraySize(Node * value) {
+    PrimGetArraySizeNode *node = (PrimGetArraySizeNode *) malloc(sizeof(PrimGetArraySizeNode));
+    node->super.type = PRIM_GET_ARRAY_SIZE_NODE;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newPrimArrayAt(Node * value, uint32_t index) {
+    PrimArrayAtNode *node = (PrimArrayAtNode *) malloc(sizeof(PrimArrayAtNode));
+    node->super.type = PRIM_ARRAY_AT_NODE;
+    node->value = value;
+    node->index = index;
+    return (Node *) node;
+}
+

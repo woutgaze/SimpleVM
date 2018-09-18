@@ -23,6 +23,11 @@
 #define WRITE_INST_VAR_NODE 13
 #define SEQUENCE_NODE 14
 #define PRIM_NOT_NODE 15
+#define ARRAY_CONSTRUCTION_NODE 16
+#define READ_INDEXED_NODE 17
+#define WRITE_INDEXED_NODE 18
+#define PRIM_GET_ARRAY_SIZE_NODE 19
+#define PRIM_ARRAY_AT_NODE 20
 
 
 typedef struct {
@@ -123,6 +128,33 @@ typedef struct {
 	Node * value;
 } PrimNotNode;
 
+typedef struct {
+	Node super;
+	NodeArray elements;
+} ArrayConstructionNode;
+
+typedef struct {
+	Node super;
+	uint32_t index;
+} ReadIndexedNode;
+
+typedef struct {
+	Node super;
+	uint32_t index;
+	Node * value;
+} WriteIndexedNode;
+
+typedef struct {
+	Node super;
+	Node * value;
+} PrimGetArraySizeNode;
+
+typedef struct {
+	Node super;
+	Node * value;
+	uint32_t index;
+} PrimArrayAtNode;
+
 Node *newInt(int value);
 
 Node *newPrimAdd(Node * left, Node * right);
@@ -154,6 +186,16 @@ Node *newWriteInstVar(uint32_t index, Node * value);
 Node *newSequence(Node ** statements, uint32_t statements_size);
 
 Node *newPrimNot(Node * value);
+
+Node *newArrayConstruction(Node ** elements, uint32_t elements_size);
+
+Node *newReadIndexed(uint32_t index);
+
+Node *newWriteIndexed(uint32_t index, Node * value);
+
+Node *newPrimGetArraySize(Node * value);
+
+Node *newPrimArrayAt(Node * value, uint32_t index);
 
 
 #endif //SIMPLEVM_ASTNODES_H

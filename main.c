@@ -35,8 +35,8 @@ void test_createObject() {
     printf("X: %d\n", sizeof(size_t));
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
-
-    ObjectPointer op = createObject(om, NULL, 2, values);
+    Class *class = createClass(2, NULL, 0, 0);
+    ObjectPointer op = createObject(om, class, values, 0);
     Object *obj = getObject(om, op);
 
     ObjectPointer v = getInstVar(obj, 0);
@@ -50,10 +50,10 @@ void test_sendmessage() {
     ObjectMemory *om = createObjectMemory();
     Node *node = newPrimAdd(newReadInstVar(0), newReadInstVar(1));
     Method *methods[] = {createMethod("add", node, 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(2, methods, 1, 0);
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
-    ObjectPointer op = createObject(om, class, 2, values);
+    ObjectPointer op = createObject(om, class, values, 0);
 
     ObjectPointer v = perform(om, op, "add", NULL);
     assertEquals(getInt(v), 7);
@@ -64,10 +64,10 @@ void test_dispatch() {
     Method *methods[] = {createMethod("add", newPrimAdd(newReadInstVar(0), newReadInstVar(1)), 0),
                          createMethod("execute", newUnaryMessage(newSelf(), "add"), 0)
     };
-    Class *class = createClass(2, methods, 2);
+    Class *class = createClass(2, methods, 2, 0);
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
-    ObjectPointer op = createObject(om, class, 2, values);
+    ObjectPointer op = createObject(om, class, values, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 7);
@@ -80,10 +80,10 @@ void test_dispatchWithArguments() {
     Method *methods[] = {createMethod("plus", newPrimAdd(newReadArg(0), newReadArg(1)), 2),
                          createMethod("add", newNaryMessage(newSelf(), "plus", add_args, 2), 1),
                          createMethod("execute", newNaryMessage(newSelf(), "add", execute_args, 1), 0)};
-    Class *class = createClass(2, methods, 3);
+    Class *class = createClass(2, methods, 3, 0);
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
-    ObjectPointer op = createObject(om, class, 2, values);
+    ObjectPointer op = createObject(om, class, values, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 7);
@@ -93,9 +93,9 @@ void test_int() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newInt(3), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 3);
@@ -105,9 +105,9 @@ void test_true() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newBool(true), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertTrue("Bool", getBool(om, v));
@@ -117,9 +117,9 @@ void test_false() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newBool(false), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertFalse("Bool", getBool(om, v));
@@ -129,9 +129,9 @@ void test_conditional_true() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newConditional(newBool(true), newInt(3), newInt(4)), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 3);
@@ -141,9 +141,9 @@ void test_conditional_false() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newConditional(newBool(false), newInt(3), newInt(4)), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 4);
@@ -153,10 +153,10 @@ void test_equals() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newPrimEquals(newReadArg(0), newReadArg(1)), 2)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
-    ObjectPointer op1 = createObject(om, NULL, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer op1 = createObject(om, NULL, NULL, 0);
     ObjectPointer v = perform(om, op, "execute", (ObjectPointer[]) {op1, op1});
     assertTrue("Bool", getBool(om, v));
 }
@@ -165,11 +165,11 @@ void test_not_equals() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newPrimEquals(newReadArg(0), newReadArg(1)), 2)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
-    ObjectPointer op1 = createObject(om, NULL, 0, NULL);
-    ObjectPointer op2 = createObject(om, NULL, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer op1 = createObject(om, NULL, NULL, 0);
+    ObjectPointer op2 = createObject(om, NULL, NULL, 0);
     ObjectPointer v = perform(om, op, "execute", (ObjectPointer[]) {op1, op2});
     assertFalse("Bool", getBool(om, v));
 }
@@ -178,10 +178,10 @@ void test_write_instvar() {
     ObjectMemory *om = createObjectMemory();
     Node *stmts[] = {newWriteInstVar(0, newInt(3)), newReadInstVar(0)};
     Method *methods[] = {createMethod("execute", newSequence(stmts, 2), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(1, methods, 1, 0);
     ObjectPointer values[] = {registerInt(23)};
 
-    ObjectPointer op = createObject(om, class, 1, values);
+    ObjectPointer op = createObject(om, class, values, 0);
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 3);
 }
@@ -195,9 +195,9 @@ void test_true_not() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newPrimNot(newBool(true)), 2)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertFalse("Bool", getBool(om, v));
 }
@@ -206,9 +206,9 @@ void test_false_not() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
             createMethod("execute", newPrimNot(newBool(false)), 2)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(0, methods, 1, 0);
 
-    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer op = createObject(om, class, NULL, 0);
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertTrue("Bool", getBool(om, v));
 }
@@ -220,12 +220,50 @@ void test_loop() {
                          newWriteInstVar(0, newPrimAdd(newReadInstVar(0), newInt(5)))),
             newReadInstVar(0)};
     Method *methods[] = {createMethod("execute", newSequence(stmts, 2), 0)};
-    Class *class = createClass(2, methods, 1);
+    Class *class = createClass(1, methods, 1, 0);
     ObjectPointer values[] = {registerInt(0)};
 
-    ObjectPointer op = createObject(om, class, 1, values);
+    ObjectPointer op = createObject(om, class, values, 0);
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 45);
+}
+
+void test_create_array() {
+    ObjectMemory *om = createObjectMemory();
+    Node *stmts[] = {
+            newWriteIndexed(1, newInt(7)),
+            newReadIndexed(1)};
+    Method *methods[] = {createMethod("execute", newSequence(stmts, 2), 0)};
+    Class *class = createClass(3, methods, 1, true);
+    ObjectPointer values[] = {registerInt(0)};
+
+    ObjectPointer op = createObject(om, class, values, 2);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 7);
+}
+
+void test_array_construction() {
+    ObjectMemory *om = createObjectMemory();
+    Node * elements[] = {newInt(1), newInt(2), newInt(3)};
+    Method *methods[] = {createMethod("execute", newPrimGetArraySize(newArrayConstruction(elements, 3)), 0)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer values[] = {registerInt(0)};
+
+    ObjectPointer op = createObject(om, class, values, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 3);
+}
+
+void test_array_construction_last() {
+    ObjectMemory *om = createObjectMemory();
+    Node * elements[] = {newInt(1), newInt(7), newInt(29)};
+    Method *methods[] = {createMethod("execute", newPrimArrayAt(newArrayConstruction(elements, 3), 2), 0)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer values[] = {registerInt(0)};
+
+    ObjectPointer op = createObject(om, class, values, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 29);
 }
 
 
@@ -253,6 +291,9 @@ int main() {
     runTest("test_true_not", test_true_not);
     runTest("test_false_not", test_false_not);
     runTest("test_loop", test_loop);
+    runTest("test_create_array", test_create_array);
+    runTest("test_array_construction", test_array_construction);
+    runTest("test_array_construction_last", test_array_construction_last);
 
     printf("Done\n");
 }
