@@ -70,7 +70,7 @@ void setInstVar(Object *obj, int instVarIndex, ObjectPointer a) {
 
 ObjectPointer getIndexed(Object *obj, size_t index) {
     Class *class = obj->class;
-    if (!class->isObjectIndexed) {
+    if (!(class->indexingType == OBJECT_INDEXED)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
@@ -85,7 +85,7 @@ ObjectPointer getIndexed(Object *obj, size_t index) {
 
 void setIndexed(Object *obj, size_t index, ObjectPointer a) {
     Class *class = obj->class;
-    if (!class->isObjectIndexed) {
+    if (!(class->indexingType == OBJECT_INDEXED)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
@@ -106,7 +106,7 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 
 size_t getIndexedSize(Object *obj) {
     Class *class = obj->class;
-    if (!class->isObjectIndexed) {
+    if (!(class->indexingType == OBJECT_INDEXED)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
@@ -123,14 +123,14 @@ Method *createMethod(const char *selector, Node *node, int numArgs) {
     return method;
 }
 
-Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, bool isObjectIndexed) {
+Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType) {
     Class *class = (Class *) malloc(sizeof(Class));
     class->super.class = NULL;
     class->superClass = NULL;
     class->instVarSize = instVarSize;
     class->methodsSize = methodsSize;
     class->methods = (Method **) malloc(sizeof(Method **) * methodsSize);
-    class->isObjectIndexed = isObjectIndexed;
+    class->indexingType = indexingType;
     for (int i = 0; i < methodsSize; i++) {
         class->methods[i] = methods[i];
     }
@@ -142,10 +142,15 @@ ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[
     return registerObject(om, obj);
 }
 
-Object * newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
+Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
     size_t instVarSize = class ? class->instVarSize : 0;
-    size_t varSize = class ? ((class->isObjectIndexed) ? (sizeof(size_t) +
-                                                          (sizeof(ObjectPointer) * indexedSize)) : 0) : 0;
+    size_t varSize = 0;
+    if (class && (class->indexingType == OBJECT_INDEXED)) {
+        varSize = sizeof(size_t) + (sizeof(ObjectPointer) * indexedSize);
+    } else if (class && (class->indexingType == BYTE_INDEXED)) {
+        varSize = sizeof(size_t) + indexedSize;
+
+    }
     Object *obj = (Object *) calloc(1, sizeof(Object) +
                                        (sizeof(ObjectPointer) * instVarSize) +
                                        varSize);
@@ -153,7 +158,7 @@ Object * newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
     for (int i = 0; i < instVarSize; i++) {
         setInstVar(obj, i, values[i]);
     }
-    if (class && class->isObjectIndexed) {
+    if (class && (class->indexingType != NONE)) {
         ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
         (firstSlot[instVarSize]) = indexedSize;
     }

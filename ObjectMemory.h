@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include "ASTNodes.h"
 
+#define NONE 0
+#define OBJECT_INDEXED 1
+#define BYTE_INDEXED 2
+
 typedef struct Class Class;
 
 typedef struct Object {
@@ -31,7 +35,7 @@ typedef struct Class {
     size_t instVarSize;
     Method **methods;
     size_t methodsSize;
-    bool isObjectIndexed;
+    int indexingType;
 } Class;
 
 typedef struct {
@@ -48,7 +52,7 @@ typedef struct {
     ObjectPointer nilValue;
     ObjectPointer trueValue;
     ObjectPointer falseValue;
-    Class * arrayClass;
+    Class *arrayClass;
 } ObjectMemory;
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc);
@@ -62,22 +66,28 @@ Object *getObject(ObjectMemory *om, ObjectPointer op);
 ObjectPointer registerInt(int value);
 
 int getInt(ObjectPointer p);
-bool getBool(ObjectMemory * om , ObjectPointer p);
+
+bool getBool(ObjectMemory *om, ObjectPointer p);
 
 ObjectPointer getInstVar(Object *obj, int instVarIndex);
+
 void setInstVar(Object *obj, int instVarIndex, ObjectPointer a);
 
 ObjectPointer getIndexed(Object *obj, size_t instVarIndex);
+
 void setIndexed(Object *obj, size_t index, ObjectPointer a);
+
 void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPointer a);
+
 size_t getIndexedSize(Object *obj);
 
 ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize);
-Object * newObject(Class *class, ObjectPointer values[], size_t indexedSize);
+
+Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
 Method *createMethod(const char *selector, Node *node, int numArgs);
 
-Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, bool isObjectIndexed);
+Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType);
 
 ObjectMemory *createObjectMemory();
 
