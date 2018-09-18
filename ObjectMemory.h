@@ -21,7 +21,8 @@ typedef struct ObjectTableEntry {
 
 typedef struct {
     const char *name;
-    uint8_t* bytecode;
+    Node *node;
+    int numArgs;
 } Method;
 
 typedef struct Class {
@@ -43,6 +44,9 @@ typedef int ObjectPointer;
 typedef struct {
     ObjectTable objectTable;
     int objectTableSize;
+    ObjectPointer nilValue;
+    ObjectPointer trueValue;
+    ObjectPointer falseValue;
 } ObjectMemory;
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc);
@@ -56,6 +60,7 @@ Object *getObject(ObjectMemory *om, ObjectPointer op);
 ObjectPointer registerInt(int value);
 
 int getInt(ObjectPointer p);
+bool getBool(ObjectMemory * om , ObjectPointer p);
 
 void setInstVar(Object *obj, int instVarIndex, ObjectPointer a);
 
@@ -63,9 +68,9 @@ ObjectPointer getInstVar(Object *obj, int instVarIndex);
 
 ObjectPointer createObject(ObjectMemory *om, Class *class, int instVarCount, ObjectPointer values[]);
 
-Method *createMethod(const char *selector, Node *node);
+Method *createMethod(const char *selector, Node *node, int numArgs);
 
-Class *createClass(size_t instVarSize, size_t methodsSize, Method *methods[1]);
+Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize);
 
 ObjectMemory *createObjectMemory();
 

@@ -1,10 +1,11 @@
 #include "ObjectMemory.h"
 #include <stdio.h>
+#include <stdbool.h>
 
 const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc) {
-    printf("resizeObjectTable: %d\n", toAlloc);
+//    printf("resizeObjectTable: %d\n", toAlloc);
     om->objectTable.size += toAlloc;
     om->objectTable.entries = (ObjectTableEntry *) realloc(om->objectTable.entries,
                                                            sizeof(ObjectTableEntry) * om->objectTable.size);
@@ -50,20 +51,28 @@ int getInt(ObjectPointer p) {
     return INTMASK ^ p;
 }
 
+bool getBool(ObjectMemory * om , ObjectPointer p) {
+    if (om->trueValue == p) return true;
+    if (om->falseValue == p) return false;
+    fprintf(stderr, "ObjectPointer is not a boolean.\n");
+    exit(-1);
+}
+
 void setInstVar(Object *obj, int instVarIndex, ObjectPointer a) {
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
     firstSlot[instVarIndex] = a;
 }
 
-Method *createMethod(const char *selector, Node *node) {
+Method *createMethod(const char *selector, Node *node, int numArgs) {
     Method *method = (Method *) malloc(sizeof(Method));
 
     method->name = selector;
-    method->bytecode = compile(node);
+    method->node = node;
+    method->numArgs = numArgs;
     return method;
 }
 
-Class *createClass(size_t instVarSize, size_t methodsSize, Method *methods[1]) {
+Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize) {
     Class *class = (Class *) malloc(sizeof(Class));
     class->super.class = NULL;
     class->superClass = NULL;
@@ -97,6 +106,8 @@ ObjectMemory *createObjectMemory() {
     om->objectTable.entries = NULL;
     om->objectTable.used = 0;
     om->objectTable.size = 0;
-    growObjectTable(om);
+    om->nilValue = createObject(om, NULL, 0, NULL);
+    om->trueValue = createObject(om, NULL, 0, NULL);
+    om->falseValue = createObject(om, NULL, 0, NULL);
     return om;
 }
