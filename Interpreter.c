@@ -59,6 +59,21 @@ ObjectPointer evaluate_PrimEqualsNode(Frame *frame, PrimEqualsNode *node) {
     return leftValue == rightValue ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
 }
 
+ObjectPointer evaluate_WriteInstVarNode(Frame *frame, WriteInstVarNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    setInstVar(frame->self, node->index, value);
+    return value;
+}
+
+ObjectPointer evaluate_SequenceNode(Frame *frame, SequenceNode *node) {
+    ObjectPointer result = frame->objectmemory->nilValue;
+    for (int i = 0; i < node->statements.size; i++) {
+        result = evaluate(frame, node->statements.elements[i]);
+    }
+    return result;
+}
+
+
 ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
         case INT_NODE:
@@ -81,6 +96,10 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_BoolNode(frame, (BoolNode *) node);
         case PRIM_EQUALS_NODE:
             return evaluate_PrimEqualsNode(frame, (PrimEqualsNode *) node);
+        case WRITE_INST_VAR_NODE:
+            return evaluate_WriteInstVarNode(frame, (WriteInstVarNode *) node);
+        case SEQUENCE_NODE:
+            return evaluate_SequenceNode(frame, (SequenceNode *) node);
     }
     fprintf(stderr, "Invalid type.\n");
     exit(-1);

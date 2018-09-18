@@ -2,6 +2,24 @@
 #include <stdlib.h>
 #include "Interpreter.h"
 
+void assertTrue(const char * description, bool value) {
+    if (!value){
+        printf("ASSERTION FAILED: %s\n", description);
+        exit(-1);
+    }
+}
+
+void assertFalse(const char * description, bool value) {
+    assertTrue(description, !value);
+}
+
+void assertEquals(int a, int b) {
+    if (!(a == b)){
+        printf("ASSERTION FAILED: %d == %d\n", a, b);
+        exit(-1);
+    }
+}
+
 void test_addEntryToObjectTable() {
     ObjectMemory *om = createObjectMemory();
     printf("X: %d\n", sizeof(size_t));
@@ -20,10 +38,12 @@ void test_createObject() {
 
     ObjectPointer op = createObject(om, NULL, 2, values);
     Object *obj = getObject(om, op);
+
     ObjectPointer v = getInstVar(obj, 0);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 3);
+
     ObjectPointer w = getInstVar(obj, 1);
-    printf("w value: %d\n", (getInt(w)));
+    assertEquals(getInt(w), 4);
 }
 
 void test_sendmessage() {
@@ -36,7 +56,7 @@ void test_sendmessage() {
     ObjectPointer op = createObject(om, class, 2, values);
 
     ObjectPointer v = perform(om, op, "add", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 7);
 }
 
 void test_dispatch() {
@@ -50,7 +70,7 @@ void test_dispatch() {
     ObjectPointer op = createObject(om, class, 2, values);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 7);
 }
 
 void test_dispatchWithArguments() {
@@ -66,7 +86,7 @@ void test_dispatchWithArguments() {
     ObjectPointer op = createObject(om, class, 2, values);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 7);
 }
 
 void test_int() {
@@ -78,7 +98,7 @@ void test_int() {
     ObjectPointer op = createObject(om, class, 0, NULL);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 3);
 }
 
 void test_true() {
@@ -90,7 +110,7 @@ void test_true() {
     ObjectPointer op = createObject(om, class, 0, NULL);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %s\n", (getBool(om, v)) ? "true" : "false");
+    assertTrue("Bool", getBool(om, v));
 }
 
 void test_false() {
@@ -102,7 +122,7 @@ void test_false() {
     ObjectPointer op = createObject(om, class, 0, NULL);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %s\n", (getBool(om, v)) ? "true" : "false");
+    assertFalse("Bool", getBool(om, v));
 }
 
 void test_conditional_true() {
@@ -114,7 +134,7 @@ void test_conditional_true() {
     ObjectPointer op = createObject(om, class, 0, NULL);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 3);
 }
 
 void test_conditional_false() {
@@ -126,34 +146,50 @@ void test_conditional_false() {
     ObjectPointer op = createObject(om, class, 0, NULL);
 
     ObjectPointer v = perform(om, op, "execute", NULL);
-    printf("v value: %d\n", (getInt(v)));
+    assertEquals(getInt(v), 4);
 }
 
 void test_equals() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
-            createMethod("execute",newPrimEquals(newReadArg(0), newReadArg(1)) , 2)};
+            createMethod("execute", newPrimEquals(newReadArg(0), newReadArg(1)), 2)};
     Class *class = createClass(2, methods, 1);
 
     ObjectPointer op = createObject(om, class, 0, NULL);
     ObjectPointer op1 = createObject(om, NULL, 0, NULL);
-    ObjectPointer * args[] = {op1, op1};
-    ObjectPointer v = perform(om, op, "execute", args );
-    printf("v value: %s\n", (getBool(om, v)) ? "true" : "false");
+    ObjectPointer v = perform(om, op, "execute", (ObjectPointer[]) {op1, op1});
+    assertTrue("Bool", getBool(om, v));
 }
 
 void test_not_equals() {
     ObjectMemory *om = createObjectMemory();
     Method *methods[] = {
-            createMethod("execute",newPrimEquals(newReadArg(0), newReadArg(1)) , 2)};
+            createMethod("execute", newPrimEquals(newReadArg(0), newReadArg(1)), 2)};
     Class *class = createClass(2, methods, 1);
 
     ObjectPointer op = createObject(om, class, 0, NULL);
     ObjectPointer op1 = createObject(om, NULL, 0, NULL);
     ObjectPointer op2 = createObject(om, NULL, 0, NULL);
-    ObjectPointer * args[] = {op1, op2};
-    ObjectPointer v = perform(om, op, "execute", args );
-    printf("v value: %s\n", (getBool(om, v)) ? "true" : "false");
+    ObjectPointer v = perform(om, op, "execute", (ObjectPointer[]) {op1, op2});
+    assertFalse("Bool", getBool(om, v));
+}
+
+void test_write_instvar() {
+    ObjectMemory *om = createObjectMemory();
+    Node *stmts[] = {newWriteInstVar(0, newInt(3)), newReadInstVar(0)};
+    Method *methods[] = {createMethod("execute", newSequence(stmts, 2), 0)};
+    Class *class = createClass(2, methods, 1);
+    ObjectPointer values[] = {registerInt(23)};
+
+    ObjectPointer op = createObject(om, class, 1, values);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 3);
+}
+
+
+void test_op_zero_is_nil() {
+    ObjectMemory *om = createObjectMemory();
+    assertTrue("ObjectPointer nil is at pos 0 in ObjectMemory", om->nilValue == 0);
 }
 
 
@@ -176,6 +212,8 @@ int main() {
     runTest("test_conditional_false", test_conditional_false);
     runTest("test_equals", test_equals);
     runTest("test_not_equals", test_not_equals);
+    runTest("test_write_instvar", test_write_instvar);
+    runTest("test_op_zero_is_nil", test_op_zero_is_nil);
 
     printf("Done\n");
 }

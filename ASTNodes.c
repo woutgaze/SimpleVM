@@ -105,3 +105,19 @@ Node *newPrimSmallerThan(Node * left, Node * right) {
     return (Node *) node;
 }
 
+Node *newWriteInstVar(uint32_t index, Node * value) {
+    WriteInstVarNode *node = (WriteInstVarNode *) malloc(sizeof(WriteInstVarNode));
+    node->super.type = WRITE_INST_VAR_NODE;
+    node->index = index;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newSequence(Node ** statements, uint32_t statements_size) {
+    SequenceNode *node = (SequenceNode *) malloc(sizeof(SequenceNode));
+    node->super.type = SEQUENCE_NODE;
+    node->statements.elements = statements;
+        node->statements.size = statements_size;
+    return (Node *) node;
+}
+
