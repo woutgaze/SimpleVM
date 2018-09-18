@@ -2,19 +2,19 @@
 #include <stdlib.h>
 #include "Interpreter.h"
 
-void assertTrue(const char * description, bool value) {
-    if (!value){
+void assertTrue(const char *description, bool value) {
+    if (!value) {
         printf("ASSERTION FAILED: %s\n", description);
         exit(-1);
     }
 }
 
-void assertFalse(const char * description, bool value) {
+void assertFalse(const char *description, bool value) {
     assertTrue(description, !value);
 }
 
 void assertEquals(int a, int b) {
-    if (!(a == b)){
+    if (!(a == b)) {
         printf("ASSERTION FAILED: %d == %d\n", a, b);
         exit(-1);
     }
@@ -186,10 +186,46 @@ void test_write_instvar() {
     assertEquals(getInt(v), 3);
 }
 
-
 void test_op_zero_is_nil() {
     ObjectMemory *om = createObjectMemory();
     assertTrue("ObjectPointer nil is at pos 0 in ObjectMemory", om->nilValue == 0);
+}
+
+void test_true_not() {
+    ObjectMemory *om = createObjectMemory();
+    Method *methods[] = {
+            createMethod("execute", newPrimNot(newBool(true)), 2)};
+    Class *class = createClass(2, methods, 1);
+
+    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertFalse("Bool", getBool(om, v));
+}
+
+void test_false_not() {
+    ObjectMemory *om = createObjectMemory();
+    Method *methods[] = {
+            createMethod("execute", newPrimNot(newBool(false)), 2)};
+    Class *class = createClass(2, methods, 1);
+
+    ObjectPointer op = createObject(om, class, 0, NULL);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertTrue("Bool", getBool(om, v));
+}
+
+void test_loop() {
+    ObjectMemory *om = createObjectMemory();
+    Node *stmts[] = {
+            newWhileTrue(newPrimSmallerThan(newReadInstVar(0), newInt(42)),
+                         newWriteInstVar(0, newPrimAdd(newReadInstVar(0), newInt(5)))),
+            newReadInstVar(0)};
+    Method *methods[] = {createMethod("execute", newSequence(stmts, 2), 0)};
+    Class *class = createClass(2, methods, 1);
+    ObjectPointer values[] = {registerInt(0)};
+
+    ObjectPointer op = createObject(om, class, 1, values);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 45);
 }
 
 
@@ -214,6 +250,9 @@ int main() {
     runTest("test_not_equals", test_not_equals);
     runTest("test_write_instvar", test_write_instvar);
     runTest("test_op_zero_is_nil", test_op_zero_is_nil);
+    runTest("test_true_not", test_true_not);
+    runTest("test_false_not", test_false_not);
+    runTest("test_loop", test_loop);
 
     printf("Done\n");
 }

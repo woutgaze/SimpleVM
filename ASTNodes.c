@@ -121,3 +121,10 @@ Node *newSequence(Node ** statements, uint32_t statements_size) {
     return (Node *) node;
 }
 
+Node *newPrimNot(Node * value) {
+    PrimNotNode *node = (PrimNotNode *) malloc(sizeof(PrimNotNode));
+    node->super.type = PRIM_NOT_NODE;
+    node->value = value;
+    return (Node *) node;
+}
+

@@ -59,6 +59,14 @@ ObjectPointer evaluate_PrimEqualsNode(Frame *frame, PrimEqualsNode *node) {
     return leftValue == rightValue ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
 }
 
+ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimSmallerThanNode *node) {
+    int leftValue = getInt(evaluate(frame, node->left));
+    int rightValue = getInt(evaluate(frame, node->right));
+    return leftValue < rightValue ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
+}
+
+
+
 ObjectPointer evaluate_WriteInstVarNode(Frame *frame, WriteInstVarNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     setInstVar(frame->self, node->index, value);
@@ -72,6 +80,19 @@ ObjectPointer evaluate_SequenceNode(Frame *frame, SequenceNode *node) {
     }
     return result;
 }
+
+ObjectPointer evaluate_PrimNotNode(Frame *frame, PrimNotNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    return !getBool(frame->objectmemory, value) ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
+}
+
+ObjectPointer evaluate_WhileTrueNode(Frame *frame, WhileTrueNode *node) {
+    while(getBool(frame->objectmemory, evaluate(frame,node->condition))) {
+        evaluate(frame,node->body);
+    }
+    return frame->objectmemory->nilValue;
+}
+
 
 
 ObjectPointer evaluate(Frame *frame, Node *node) {
@@ -92,14 +113,20 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_ReadArgNode(frame, (ReadArgNode *) node);
         case CONDITIONAL_NODE:
             return evaluate_ConditionalNode(frame, (ConditionalNode *) node);
+        case WHILE_TRUE_NODE:
+            return evaluate_WhileTrueNode(frame, (WhileTrueNode *) node);
         case BOOL_NODE:
             return evaluate_BoolNode(frame, (BoolNode *) node);
         case PRIM_EQUALS_NODE:
             return evaluate_PrimEqualsNode(frame, (PrimEqualsNode *) node);
+        case PRIM_SMALLER_THAN_NODE:
+            return evaluate_PrimSmallerThanNode(frame, (PrimSmallerThanNode *) node);
         case WRITE_INST_VAR_NODE:
             return evaluate_WriteInstVarNode(frame, (WriteInstVarNode *) node);
         case SEQUENCE_NODE:
             return evaluate_SequenceNode(frame, (SequenceNode *) node);
+        case PRIM_NOT_NODE:
+            return evaluate_PrimNotNode(frame, (PrimNotNode *) node);
     }
     fprintf(stderr, "Invalid type.\n");
     exit(-1);

@@ -22,6 +22,7 @@
 #define PRIM_SMALLER_THAN_NODE 12
 #define WRITE_INST_VAR_NODE 13
 #define SEQUENCE_NODE 14
+#define PRIM_NOT_NODE 15
 
 
 typedef struct {
@@ -117,6 +118,11 @@ typedef struct {
 	NodeArray statements;
 } SequenceNode;
 
+typedef struct {
+	Node super;
+	Node * value;
+} PrimNotNode;
+
 Node *newInt(int value);
 
 Node *newPrimAdd(Node * left, Node * right);
@@ -146,6 +152,8 @@ Node *newPrimSmallerThan(Node * left, Node * right);
 Node *newWriteInstVar(uint32_t index, Node * value);
 
 Node *newSequence(Node ** statements, uint32_t statements_size);
+
+Node *newPrimNot(Node * value);
 
 
 #endif //SIMPLEVM_ASTNODES_H
