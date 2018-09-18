@@ -1,6 +1,7 @@
 #include "ObjectMemory.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <mem.h>
 
 const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
 
@@ -58,6 +59,27 @@ bool getBool(ObjectMemory *om, ObjectPointer p) {
     exit(-1);
 }
 
+char *getCString(ObjectMemory *om, ObjectPointer p) {
+    Object * obj = getObject(om, p);
+    Class *class = obj->class;
+    if (!(class->indexingType == BYTE_INDEXED)) {
+        fprintf(stderr, "Object is not byte indexed.\n");
+        exit(-1);
+    }
+
+    size_t offset = sizeof(Object) +
+                    (sizeof(ObjectPointer) * class->instVarSize) + sizeof(size_t);
+    char * src = ((char *) obj) + offset;
+
+
+    ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
+    size_t size = firstSlot[class->instVarSize];
+    char * string = malloc(size + 1);
+    memcpy(string, src, size);
+    string[size] = NULL;
+    return string;
+}
+
 ObjectPointer getInstVar(Object *obj, int instVarIndex) {
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
     return firstSlot[instVarIndex];
@@ -106,7 +128,7 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 
 size_t getIndexedSize(Object *obj) {
     Class *class = obj->class;
-    if (!(class->indexingType == OBJECT_INDEXED)) {
+    if ((class->indexingType == NONE)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
@@ -173,6 +195,7 @@ ObjectMemory *createObjectMemory() {
     om->nilValue = createObject(om, NULL, NULL, 0);
     om->trueValue = createObject(om, NULL, NULL, 0);
     om->falseValue = createObject(om, NULL, NULL, 0);
-    om->arrayClass = createClass(0, NULL, 0, true);
+    om->arrayClass = createClass(0, NULL, 0, OBJECT_INDEXED);
+    om->stringClass = createClass(0, NULL, 0, BYTE_INDEXED);
     return om;
 }

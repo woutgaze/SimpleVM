@@ -126,6 +126,18 @@ ObjectPointer evaluate_PrimArrayAtNode(Frame *frame, PrimArrayAtNode *node) {
     return getIndexed(obj, node->index);
 }
 
+ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
+    Class * stringClass = frame->objectmemory->stringClass;
+    size_t len = strlen(node->value);
+    Object * obj = newObject(stringClass, NULL, len);
+    const char *src = (node->value);
+    size_t offset = sizeof(Object) +
+                    (sizeof(ObjectPointer) * stringClass->instVarSize) + sizeof(size_t);
+    char * dest = ((char *) obj) + offset;
+    memcpy(dest, src, len);
+    return registerObject(frame->objectmemory, obj);
+}
+
 ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
         case INT_NODE:
@@ -168,6 +180,8 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_PrimGetArraySizeNode(frame, (PrimGetArraySizeNode *) node);
         case PRIM_ARRAY_AT_NODE:
             return evaluate_PrimArrayAtNode(frame, (PrimArrayAtNode *) node);
+        case STRING_NODE:
+            return evaluate_StringNode(frame, (StringNode *) node);
     }
     fprintf(stderr, "Invalid type.\n");
     exit(-1);

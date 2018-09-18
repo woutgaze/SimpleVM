@@ -266,6 +266,16 @@ void test_array_construction_last() {
     assertEquals(getInt(v), 29);
 }
 
+void test_create_string() {
+    ObjectMemory *om = createObjectMemory();
+    Method *methods[] = {createMethod("execute", newString("Kaas"), 0)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    printf("String: %s\n\n", getCString(om, v));
+}
+
+
 
 void runTest(const char *label, void (*testFN)()) {
     printf("Starting %s\n", label);
@@ -294,6 +304,7 @@ int main() {
     runTest("test_create_array", test_create_array);
     runTest("test_array_construction", test_array_construction);
     runTest("test_array_construction_last", test_array_construction_last);
+    runTest("test_create_string", test_create_string);
 
     printf("Done\n");
 }

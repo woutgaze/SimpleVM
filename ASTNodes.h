@@ -28,6 +28,7 @@
 #define WRITE_INDEXED_NODE 18
 #define PRIM_GET_ARRAY_SIZE_NODE 19
 #define PRIM_ARRAY_AT_NODE 20
+#define STRING_NODE 21
 
 
 typedef struct {
@@ -155,6 +156,11 @@ typedef struct {
 	uint32_t index;
 } PrimArrayAtNode;
 
+typedef struct {
+	Node super;
+	const char * value;
+} StringNode;
+
 Node *newInt(int value);
 
 Node *newPrimAdd(Node * left, Node * right);
@@ -196,6 +202,8 @@ Node *newWriteIndexed(uint32_t index, Node * value);
 Node *newPrimGetArraySize(Node * value);
 
 Node *newPrimArrayAt(Node * value, uint32_t index);
+
+Node *newString(const char * value);
 
 
 #endif //SIMPLEVM_ASTNODES_H

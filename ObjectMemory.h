@@ -53,6 +53,7 @@ typedef struct {
     ObjectPointer trueValue;
     ObjectPointer falseValue;
     Class *arrayClass;
+    Class *stringClass;
 } ObjectMemory;
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc);
@@ -66,8 +67,8 @@ Object *getObject(ObjectMemory *om, ObjectPointer op);
 ObjectPointer registerInt(int value);
 
 int getInt(ObjectPointer p);
-
 bool getBool(ObjectMemory *om, ObjectPointer p);
+char * getCString(ObjectMemory *om, ObjectPointer p);
 
 ObjectPointer getInstVar(Object *obj, int instVarIndex);
 

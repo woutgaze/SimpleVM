@@ -166,3 +166,10 @@ Node *newPrimArrayAt(Node * value, uint32_t index) {
     return (Node *) node;
 }
 
+Node *newString(const char * value) {
+    StringNode *node = (StringNode *) malloc(sizeof(StringNode));
+    node->super.type = STRING_NODE;
+    node->value = value;
+    return (Node *) node;
+}
+
