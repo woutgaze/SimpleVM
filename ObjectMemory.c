@@ -4,9 +4,8 @@
 #include <string.h>
 
 static const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
-static const int MAX_OBJECT_TABLES = 256;
-static const int OBJECT_TABLES_MASK = 0xFF;
-static const int OBJECT_TABLES_SHIFT = 8;
+static const int MAX_OBJECT_TABLES = 1 << OBJECT_TABLES_BITS;
+static const int OBJECT_TABLES_MASK = (1 << OBJECT_TABLES_BITS) - 1;
 
 
 Class *createClassFromNode(ClassNode *classNode);
@@ -38,7 +37,7 @@ size_t registerObjectInTable(ObjectTable *objectTable, Object *obj) {
 ObjectPointer registerObjectWithTableIndex(ObjectMemory *om, Object *obj, size_t tables_index) {
     size_t entries_index = registerObjectInTable(&om->objectTables[tables_index], obj);
 
-    size_t result = (entries_index << OBJECT_TABLES_SHIFT) | tables_index;
+    size_t result = (entries_index << OBJECT_TABLES_BITS) | tables_index;
     return result;
 }
 
@@ -57,7 +56,7 @@ ObjectPointer findObjectMatching(ObjectMemory *om, BytesObject *bytes, size_t si
     ObjectTable table = om->objectTables[tables_index];
     for (size_t i = 0; i < table.used; i++) {
         BytesObject *obj = table.entries[i].object;
-        if (!memcmp(obj, bytes, size)) return (i << OBJECT_TABLES_SHIFT) | tables_index;
+        if (!memcmp(obj, bytes, size)) return (i << OBJECT_TABLES_BITS) | tables_index;
     }
     return 0;
 }
@@ -69,7 +68,7 @@ Object *getObject(ObjectMemory *om, ObjectPointer op) {
         exit(-1);
     }
     size_t tables_index = op & OBJECT_TABLES_MASK;
-    size_t entries_index = op >> OBJECT_TABLES_SHIFT;
+    size_t entries_index = op >> OBJECT_TABLES_BITS;
     return om->objectTables[tables_index].entries[entries_index].object;
 }
 

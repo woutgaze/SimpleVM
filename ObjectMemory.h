@@ -13,6 +13,9 @@
 #define OBJECT_INDEXED 1
 #define BYTE_INDEXED 2
 
+#define OBJECT_TABLES_BITS 8
+
+
 typedef struct Class Class;
 
 typedef struct Object {
