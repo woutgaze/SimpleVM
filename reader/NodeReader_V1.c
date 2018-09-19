@@ -193,7 +193,7 @@ Node *readBlockNode_V1(FILE *fileptr) {
 Node *readMethodNode_V1(FILE *fileptr) {
     const char * selector = readString_V1(fileptr);
 
-    BlockNode * block = readBlockNode_V1(fileptr);
+    BlockNode * block = readNode_V1(fileptr);
 
     return newMethod(selector, block);
 }
