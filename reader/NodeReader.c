@@ -20,3 +20,11 @@ Node *readNodeFile(FILE *fileptr) {
     fprintf(stderr, "Unknown version.\n");
     exit(-1);
 }
+
+Node *readNodeFromBytes(char *bytes) {
+    FILE *stream;
+    stream = fmemopen(bytes, -1, "r");
+    Node *node = readNodeFile(stream);
+    fclose(stream);
+    return node;
+}

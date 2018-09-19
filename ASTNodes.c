@@ -53,6 +53,12 @@ Node *newNaryMessage(Node * receiver, const char * selector, Node ** arguments, 
     return (Node *) node;
 }
 
+Node *newNil() {
+    NilNode *node = (NilNode *) malloc(sizeof(NilNode));
+    node->super.type = NIL_NODE;
+    return (Node *) node;
+}
+
 Node *newPrimAdd(Node * left, Node * right) {
     PrimAddNode *node = (PrimAddNode *) malloc(sizeof(PrimAddNode));
     node->super.type = PRIM_ADD_NODE;

@@ -50,6 +50,10 @@ Node *readNaryMessageNode_V1(FILE *fileptr) {
     return newNaryMessage(receiver, selector, arguments.elements, arguments.size);
 }
 
+Node *readNilNode_V1(FILE *fileptr) {
+    return newNil();
+}
+
 Node *readPrimAddNode_V1(FILE *fileptr) {
     Node * left = (Node *) readNode_V1(fileptr);
 
@@ -251,6 +255,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readIntNode_V1(fileptr);
         case NARY_MESSAGE_NODE:
             return readNaryMessageNode_V1(fileptr);
+        case NIL_NODE:
+            return readNilNode_V1(fileptr);
         case PRIM_ADD_NODE:
             return readPrimAddNode_V1(fileptr);
         case PRIM_ARRAY_AT_NODE:

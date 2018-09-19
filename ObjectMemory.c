@@ -1,4 +1,5 @@
 #include "ObjectMemory.h"
+#include "reader/NodeReader.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -8,9 +9,11 @@ static const int MAX_OBJECT_TABLES = 1 << OBJECT_TABLES_BITS;
 static const int OBJECT_TABLES_MASK = (1 << OBJECT_TABLES_BITS) - 1;
 
 
-Class *createClassFromNode(ClassNode *classNode);
+Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode);
 
 void resizeObjectTable(ObjectTable *objectTable, int toAlloc);
+
+void initializeObjectTable(ObjectTable *table);
 
 void resizeObjectTable(ObjectTable *objectTable, int toAlloc) {
     objectTable->size += toAlloc;
@@ -179,19 +182,43 @@ MethodNode *createMethod(const char *selector, Node *node) {
     return (MethodNode *) newMethod(selector, (BlockNode *) newBlock(NULL, 0, NULL, 0, node));
 }
 
-Class *createClassFromNode(ClassNode *classNode) {
+Class *createClassNoRegister(ObjectMemory *om, ClassNode *classNode) {
+    if ((classNode->indexedType == BYTE_INDEXED) && (classNode->instSide->instVars.size != 0)) {
+        fprintf(stderr, "Class cannot be both byte indexed and holding instVars: .\n");
+        exit(-1);
+    }
     Class *class = (Class *) malloc(sizeof(Class));
     class->super.class = NULL;
     class->classNode = classNode;
     return class;
 }
 
-Class *createClass(size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType) {
+Class *findClass(ObjectMemory *om, const char *name) {
+    for (int i = 0; i < om->classTable.used; i++) {
+        Class *class = (Class *) om->classTable.entries[i].object;
+        if (strcmp(class->classNode->name, name) == 0) return class;
+    };
+    return NULL;
+}
+
+void registerClass(ObjectMemory *om, Class *class) {
+    registerObject(om, class);
+    registerObjectInTable(&om->classTable, class);
+    class->superClass = findClass(om, class->classNode->superName);
+}
+
+Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode) {
+    Class *class = createClassNoRegister(om, classNode);
+    registerClass(om, class);
+    return class;
+}
+
+Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType) {
     ArgumentNode *instVars[] = {newArgument("t1"), newArgument("t2"), newArgument("t3")};
     ClassSideNode *instSide = (ClassSideNode *) newClassSide(instVars, instVarSize, methods, methodsSize);
     ClassSideNode *classSide = (ClassSideNode *) newClassSide(NULL, 0, NULL, 0);
     ClassNode *classNode = (ClassNode *) newClass("Test", "", indexingType, instSide, classSide);
-    return createClassFromNode(classNode);
+    return createClassFromNode(om, classNode);
 }
 
 ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize) {
@@ -224,20 +251,63 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
     return obj;
 }
 
+ClassNode *newUndefinedObjectClass() {
+    char bytes[] = {83, 86, 1, 28, 15, 0, 85, 110, 100, 101, 102, 105, 110, 101, 100, 79, 98, 106, 101, 99, 116, 6, 0,
+                    79, 98, 106, 101, 99, 116, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0,
+                    14, 1, 0, 7, 10, 1, 27, 0, 0, 0, 0};
+    return (ClassNode *) readNodeFromBytes(bytes);
+}
+
+ClassNode *newObjectClass() {
+    char bytes[] = {83, 86, 1, 28, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78,
+                    105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 7, 10, 0, 27, 0, 0, 0, 0};
+    return (ClassNode *) readNodeFromBytes(bytes);
+}
+
+ClassNode *newBooleanClass() {
+    char bytes[] = {83, 86, 1, 28, 7, 0, 66, 111, 111, 108, 101, 97, 110, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 27, 0,
+                    0, 0, 0, 27, 0, 0, 0, 0};
+    return (ClassNode *) readNodeFromBytes(bytes);
+}
+
+ClassNode *newTrueClass() {
+    char bytes[] = {83, 86, 1, 28, 4, 0, 84, 114, 117, 101, 7, 0, 66, 111, 111, 108, 101, 97, 110, 0, 0, 27, 0, 0, 0, 0,
+                    27, 0, 0, 0, 0};
+    return (ClassNode *) readNodeFromBytes(bytes);
+}
+
+ClassNode *newFalseClass() {
+    char bytes[] = {83, 86, 1, 28, 5, 0, 70, 97, 108, 115, 101, 7, 0, 66, 111, 111, 108, 101, 97, 110, 0, 0, 27, 0, 0,
+                    0, 0, 27, 0, 0, 0, 0};
+    return (ClassNode *) readNodeFromBytes(bytes);
+}
+
+
 ObjectMemory *createObjectMemory() {
     ObjectMemory *om = (ObjectMemory *) malloc(sizeof(ObjectMemory));
     om->nextTableIndex = 0;
     om->objectTables = malloc(sizeof(ObjectTable) * MAX_OBJECT_TABLES);
     for (int i = 0; i < MAX_OBJECT_TABLES; i++) {
-        om->objectTables[i].entries = NULL;
-        om->objectTables[i].used = 0;
-        om->objectTables[i].size = 0;
+        initializeObjectTable(&om->objectTables[i]);
     }
-    om->nilClass = createClass(0, NULL, 0, NONE);
+    initializeObjectTable(&om->classTable);
+    Class *objClass = createClassNoRegister(om, newObjectClass());
+    om->nilClass = createClassNoRegister(om, newUndefinedObjectClass());
     om->nilValue = createObject(om, om->nilClass, NULL, 0);
-    om->trueValue = createObject(om, NULL, NULL, 0);
-    om->falseValue = createObject(om, NULL, NULL, 0);
-    om->arrayClass = createClass(0, NULL, 0, OBJECT_INDEXED);
-    om->stringClass = createClass(0, NULL, 0, BYTE_INDEXED);
+    registerClass(om, objClass);
+    registerClass(om, om->nilClass);
+    createClassFromNode(om, newBooleanClass());
+    Class *trueClass = createClassFromNode(om, newTrueClass());
+    Class *falseClass = createClassFromNode(om, newFalseClass());
+    om->trueValue = createObject(om, trueClass, NULL, 0);
+    om->falseValue = createObject(om, falseClass, NULL, 0);
+    om->arrayClass = createClass(om, 0, NULL, 0, OBJECT_INDEXED);
+    om->stringClass = createClass(om, 0, NULL, 0, BYTE_INDEXED);
     return om;
+}
+
+void initializeObjectTable(ObjectTable *table) {
+    table->entries = NULL;
+    table->used = 0;
+    table->size = 0;
 }

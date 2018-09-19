@@ -55,6 +55,7 @@ typedef struct {
     Class *stringClass;
     Class *nilClass;
     size_t nextTableIndex;
+    ObjectTable classTable;
     ObjectTable *objectTables;
 } ObjectMemory;
 
@@ -90,9 +91,9 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
 MethodNode *createMethod(const char *selector, Node *node);
 
-Class *createClass(size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType);
+Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType);
 
-Class *createClassFromNode(ClassNode *classNode);
+Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode);
 
 ObjectMemory *createObjectMemory();
 

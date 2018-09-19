@@ -162,8 +162,15 @@ ObjectPointer evaluate_ReturnNode(Frame *frame, ReturnNode *node) {
 }
 
 ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *node) {
-    BytesObject *left = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->left));
-    BytesObject *right = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->right));
+    Object *leftObject = getObject(frame->objectmemory, evaluate(frame, node->left));
+    Object *rightObject = getObject(frame->objectmemory, evaluate(frame, node->right));
+    if ((leftObject->class->classNode->indexedType != BYTE_INDEXED) ||
+        (rightObject->class->classNode->indexedType != BYTE_INDEXED)) {
+        fprintf(stderr, "Argument is not bytes.\n");
+        exit(-1);
+    }
+    BytesObject *left = (BytesObject *) leftObject;
+    BytesObject *right = (BytesObject *) rightObject;
     BytesObject *result = malloc(sizeof(BytesObject) + left->size + right->size);
     result->size = left->size + right->size;
     result->class = left->class;
@@ -179,7 +186,7 @@ ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *
     return registerObjectWithHash(frame->objectmemory, result, hash);
 }
 
-ObjectPointer evaluate_PrimStringInternNode (Frame *frame, PrimStringInternNode *node) {
+ObjectPointer evaluate_PrimStringInternNode(Frame *frame, PrimStringInternNode *node) {
     BytesObject *value = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->value));
     uint32_t hash = string_hash(value->bytes, value->size);
     // The "interned" object is always the first object found.
@@ -241,6 +248,8 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_PrimStringConcatNode(frame, (PrimStringConcatNode *) node);
         case PRIM_STRING_INTERN_NODE:
             return evaluate_PrimStringInternNode(frame, (struct PrimStringInternNode *) node);
+        case NIL_NODE:
+            return frame->objectmemory->nilValue;
     }
     const char *typeLabel = NODE_LABELS[node->type];
     fprintf(stderr, "Invalid type: %S.\n", typeLabel);
@@ -253,7 +262,9 @@ MethodNode *lookupSelector(Class *class, const char *selector) {
         MethodNode *method = methods.elements[i];
         if (strcmp(method->selector, selector) == 0) return method;
     }
-    if (class->superClass) return lookupSelector(class->superClass, selector);
+    if (class->superClass) {
+        return lookupSelector(class->superClass, selector);
+    };
     fprintf(stderr, "Selector not found: #%s\n", selector);
     exit(-1);
 }

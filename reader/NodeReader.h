@@ -9,5 +9,7 @@
 #include "../ASTNodes.h"
 
 Node *readNodeFile(FILE *fileptr);
+Node *readNodeFromBytes(char * bytes);
+
 
 #endif //SIMPLEVM_NODEREADER_H
