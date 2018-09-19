@@ -29,6 +29,8 @@
 #define PRIM_GET_ARRAY_SIZE_NODE 19
 #define PRIM_ARRAY_AT_NODE 20
 #define STRING_NODE 21
+#define ARGUMENT_NODE 22
+#define METHOD_NODE 23
 
 
 typedef struct {
@@ -161,6 +163,18 @@ typedef struct {
 	const char * value;
 } StringNode;
 
+typedef struct {
+	Node super;
+	const char * name;
+} ArgumentNode;
+
+typedef struct {
+	Node super;
+	const char * selector;
+	NodeArray arguments;
+	Node * body;
+} MethodNode;
+
 Node *newInt(int value);
 
 Node *newPrimAdd(Node * left, Node * right);
@@ -204,6 +218,10 @@ Node *newPrimGetArraySize(Node * value);
 Node *newPrimArrayAt(Node * value, uint32_t index);
 
 Node *newString(const char * value);
+
+Node *newArgument(const char * name);
+
+Node *newMethod(const char * selector, Node ** arguments, uint32_t arguments_size, Node * body);
 
 
 #endif //SIMPLEVM_ASTNODES_H

@@ -160,6 +160,22 @@ Node *readStringNode_V1(FILE *fileptr) {
     return newString(value);
 }
 
+Node *readArgumentNode_V1(FILE *fileptr) {
+    const char * name = readString_V1(fileptr);
+
+    return newArgument(name);
+}
+
+Node *readMethodNode_V1(FILE *fileptr) {
+    const char * selector = readString_V1(fileptr);
+
+    NodeArray arguments = readNodeArray_V1(fileptr);
+
+    Node * body = readNode_V1(fileptr);
+
+    return newMethod(selector, arguments.elements, arguments.size, body);
+}
+
 Node *readNode_V1(FILE *fileptr) {
     char type = getc(fileptr);
 
@@ -209,6 +225,10 @@ Node *readNode_V1(FILE *fileptr) {
             return readPrimArrayAtNode_V1(fileptr);
         case STRING_NODE:
             return readStringNode_V1(fileptr);
+        case ARGUMENT_NODE:
+            return readArgumentNode_V1(fileptr);
+        case METHOD_NODE:
+            return readMethodNode_V1(fileptr);
     }
 
     fprintf(stderr, "Unknown type.\n");
