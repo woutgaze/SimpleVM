@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "Interpreter.h"
 #include "reader/NodeReader.h"
+#include "Hashing.h"
 
 void assertTrue(const char *description, bool value) {
     if (!value) {
@@ -63,7 +64,7 @@ void test_sendmessage() {
 void test_dispatch() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {createMethod("add", newPrimAdd(newReadInstVar(0), newReadInstVar(1))),
-                         createMethod("execute", newUnaryMessage(newSelf(), "add"))
+                             createMethod("execute", newUnaryMessage(newSelf(), "add"))
     };
     Class *class = createClass(2, methods, 2, 0);
 
@@ -79,8 +80,8 @@ void test_dispatchWithArguments() {
     Node *add_args[] = {newReadArg(0), newReadInstVar(1)};
     Node *execute_args[] = {newReadInstVar(0)};
     MethodNode *methods[] = {createMethod("plus", newPrimAdd(newReadArg(0), newReadArg(1))),
-                         createMethod("add", newNaryMessage(newSelf(), "plus", add_args, 2)),
-                         createMethod("execute", newNaryMessage(newSelf(), "add", execute_args, 1))};
+                             createMethod("add", newNaryMessage(newSelf(), "plus", add_args, 2)),
+                             createMethod("execute", newNaryMessage(newSelf(), "add", execute_args, 1))};
     Class *class = createClass(2, methods, 3, 0);
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
@@ -245,7 +246,7 @@ void test_create_array() {
 
 void test_array_construction() {
     ObjectMemory *om = createObjectMemory();
-    Node * elements[] = {newInt(1), newInt(2), newInt(3)};
+    Node *elements[] = {newInt(1), newInt(2), newInt(3)};
     MethodNode *methods[] = {createMethod("execute", newPrimGetArraySize(newArrayConstruction(elements, 3)))};
     Class *class = createClass(0, methods, 1, false);
     ObjectPointer values[] = {registerInt(0)};
@@ -257,7 +258,7 @@ void test_array_construction() {
 
 void test_array_construction_last() {
     ObjectMemory *om = createObjectMemory();
-    Node * elements[] = {newInt(1), newInt(7), newInt(29)};
+    Node *elements[] = {newInt(1), newInt(7), newInt(29)};
     MethodNode *methods[] = {createMethod("execute", newPrimArrayAt(newArrayConstruction(elements, 3), 2))};
     Class *class = createClass(0, methods, 1, false);
     ObjectPointer values[] = {registerInt(0)};
@@ -278,11 +279,11 @@ void test_create_string() {
 
 void test_read_string_node() {
     ObjectMemory *om = createObjectMemory();
-    char bytes[] = { 0x53, 0x56, 0x01, 0x15, 0x04, 0x00, 0x4B, 0x61, 0x61, 0x73} ;
+    char bytes[] = {0x53, 0x56, 0x01, 0x15, 0x04, 0x00, 0x4B, 0x61, 0x61, 0x73};
     FILE *stream;
 
-    stream = fmemopen (bytes, -1, "r");
-    Node * node = readNodeFile(stream);
+    stream = fmemopen(bytes, -1, "r");
+    Node *node = readNodeFile(stream);
     MethodNode *methods[] = {createMethod("execute", node)};
     Class *class = createClass(0, methods, 1, NONE);
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -292,11 +293,11 @@ void test_read_string_node() {
 
 void test_read_sequence_node() {
     ObjectMemory *om = createObjectMemory();
-    char bytes[] = { 83, 86, 1, 14, 3, 0, 13, 0, 0, 0, 3, 0, 0, 0, 13, 1, 0, 0, 4, 0, 0, 0, 1, 2, 0, 0, 2, 1, 0} ;
+    char bytes[] = {83, 86, 1, 14, 3, 0, 13, 0, 0, 0, 3, 0, 0, 0, 13, 1, 0, 0, 4, 0, 0, 0, 1, 2, 0, 0, 2, 1, 0};
     FILE *stream;
 
-    stream = fmemopen (bytes, -1, "r");
-    Node * node = readNodeFile(stream);
+    stream = fmemopen(bytes, -1, "r");
+    Node *node = readNodeFile(stream);
     MethodNode *methods[] = {createMethod("execute", node)};
     Class *class = createClass(0, methods, 1, false);
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -306,11 +307,12 @@ void test_read_sequence_node() {
 
 void test_read_method_node() {
     ObjectMemory *om = createObjectMemory();
-    char bytes[] = { 83, 86, 1, 23, 7, 0, 101, 120, 101, 99, 117, 116, 101, 24, 0, 0, 1, 0, 22, 3, 0, 102, 111, 111, 14, 2, 0, 26, 0, 0, 21, 4, 0, 75, 97, 97, 115, 7, 25, 0, 0 } ;
+    char bytes[] = {83, 86, 1, 23, 7, 0, 101, 120, 101, 99, 117, 116, 101, 24, 0, 0, 1, 0, 22, 3, 0, 102, 111, 111, 14,
+                    2, 0, 26, 0, 0, 21, 4, 0, 75, 97, 97, 115, 7, 25, 0, 0};
     FILE *stream;
 
-    stream = fmemopen (bytes, -1, "r");
-    MethodNode * methodNode = (MethodNode *) readNodeFile(stream);
+    stream = fmemopen(bytes, -1, "r");
+    MethodNode *methodNode = (MethodNode *) readNodeFile(stream);
     MethodNode *methods[] = {methodNode};
     Class *class = createClass(2, methods, 1, NONE);
     ObjectPointer values[] = {om->nilValue, om->nilValue};
@@ -323,11 +325,16 @@ void test_read_method_node() {
 
 void test_read_class_node() {
     ObjectMemory *om = createObjectMemory();
-    char bytes[] = { 83, 86, 1, 28, 4, 0, 75, 97, 97, 115, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 27, 2, 0, 22, 3, 0, 102, 111, 111, 22, 3, 0, 98, 97, 114, 3, 0, 23, 4, 0, 105, 110, 105, 116, 24, 0, 0, 0, 0, 14, 1, 0, 13, 0, 0, 0, 3, 0, 0, 0, 23, 9, 0, 99, 97, 108, 99, 117, 108, 97, 116, 101, 24, 0, 0, 0, 0, 14, 1, 0, 7, 1, 2, 0, 0, 0, 19, 0, 0, 0, 23, 7, 0, 101, 120, 101, 99, 117, 116, 101, 24, 0, 0, 0, 0, 14, 2, 0, 3, 5, 4, 0, 105, 110, 105, 116, 7, 3, 5, 9, 0, 99, 97, 108, 99, 117, 108, 97, 116, 101, 27, 0, 0, 0, 0 } ;
+    char bytes[] = {83, 86, 1, 28, 4, 0, 75, 97, 97, 115, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 27, 2, 0, 22, 3, 0,
+                    102, 111, 111, 22, 3, 0, 98, 97, 114, 3, 0, 23, 4, 0, 105, 110, 105, 116, 24, 0, 0, 0, 0, 14, 1, 0,
+                    13, 0, 0, 0, 3, 0, 0, 0, 23, 9, 0, 99, 97, 108, 99, 117, 108, 97, 116, 101, 24, 0, 0, 0, 0, 14, 1,
+                    0, 7, 1, 2, 0, 0, 0, 19, 0, 0, 0, 23, 7, 0, 101, 120, 101, 99, 117, 116, 101, 24, 0, 0, 0, 0, 14, 2,
+                    0, 3, 5, 4, 0, 105, 110, 105, 116, 7, 3, 5, 9, 0, 99, 97, 108, 99, 117, 108, 97, 116, 101, 27, 0, 0,
+                    0, 0};
     FILE *stream;
 
-    stream = fmemopen (bytes, -1, "r");
-    ClassNode * classNode = (ClassNode *) readNodeFile(stream);
+    stream = fmemopen(bytes, -1, "r");
+    ClassNode *classNode = (ClassNode *) readNodeFile(stream);
     Class *class = createClassFromNode(classNode);
     ObjectPointer values[] = {om->nilValue};
 
@@ -335,6 +342,55 @@ void test_read_class_node() {
     ObjectPointer op = createObject(om, class, values, 0);
     ObjectPointer v = perform(om, op, "execute", NULL);
     assertEquals(getInt(v), 22);
+}
+
+void test_hash_string() {
+    assertEquals(string_hash("Kaas", 4), 2089277829);
+    assertEquals(string_hash("Worst", 5), 241444420);
+    assertEquals(string_hash("", 0), 5381);
+}
+
+void test_string_intern() {
+    ObjectMemory *om = createObjectMemory();
+    MethodNode *methods[] = {createMethod("execute", newPrimEquals(newString("Kaas"), newString("Kaas")))};
+    Class *class = createClass(0, methods, 1, NONE);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertTrue("Strings are pointer-equal", getBool(om, v));
+
+}
+
+void test_string_intern_ne() {
+    ObjectMemory *om = createObjectMemory();
+    MethodNode *methods[] = {createMethod("execute", newPrimEquals(newString("Kaas1"), newString("Kaas2")))};
+    Class *class = createClass(0, methods, 1, NONE);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertFalse("Strings are pointer-equal", getBool(om, v));
+}
+
+void test_prim_string_concat() {
+    ObjectMemory *om = createObjectMemory();
+    MethodNode *methods[] = {createMethod("execute",
+                                          newPrimEquals(
+                                                  newString("Wortel"),
+                                                  newPrimStringConcat(newString("Wort"), newString("el"))))};
+    Class *class = createClass(0, methods, 1, NONE);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertFalse("Strings are pointer-equal", getBool(om, v));
+}
+
+void test_prim_string_concat_intern() {
+    ObjectMemory *om = createObjectMemory();
+    MethodNode *methods[] = {createMethod("execute",
+                                          newPrimEquals(newString("Wortel"), newPrimStringIntern(
+                                                  newPrimStringConcat(newString("Wort"), newString("el")))
+                                          ))};
+    Class *class = createClass(0, methods, 1, NONE);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertTrue("Strings are pointer-equal", getBool(om, v));
 }
 
 void runTest(const char *label, void (*testFN)()) {
@@ -369,7 +425,11 @@ int main() {
     runTest("test_read_sequence_node", test_read_sequence_node);
     runTest("test_read_method_node", test_read_method_node);
     runTest("test_read_class_node", test_read_class_node);
-
+    runTest("test_hash_string", test_hash_string);
+    runTest("test_string_intern", test_string_intern);
+    runTest("test_prim_string_concat", test_prim_string_concat);
+    runTest("test_prim_string_concat_intern", test_prim_string_concat_intern);
+    runTest("test_string_intern_ne", test_string_intern_ne);
 
 
     printf("Done\n");

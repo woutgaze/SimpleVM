@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Interpreter.h"
 #include "DevTools.h"
+#include "Hashing.h"
 
 
 ObjectPointer evaluate(Frame *frame, Node *node);
@@ -67,7 +68,6 @@ ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimSmallerThanNode *no
 }
 
 
-
 ObjectPointer evaluate_WriteInstVarNode(Frame *frame, WriteInstVarNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     setInstVar(frame->self, node->index, value);
@@ -88,18 +88,18 @@ ObjectPointer evaluate_PrimNotNode(Frame *frame, PrimNotNode *node) {
 }
 
 ObjectPointer evaluate_WhileTrueNode(Frame *frame, WhileTrueNode *node) {
-    while(getBool(frame->objectmemory, evaluate(frame,node->condition))) {
-        evaluate(frame,node->body);
+    while (getBool(frame->objectmemory, evaluate(frame, node->condition))) {
+        evaluate(frame, node->body);
     }
     return frame->objectmemory->nilValue;
 }
 
 ObjectPointer evaluate_ArrayConstructionNode(Frame *frame, ArrayConstructionNode *node) {
-    Class * arrayClass = frame->objectmemory->arrayClass;
-    Object * obj = newObject(arrayClass, NULL, node->elements.size);
+    Class *arrayClass = frame->objectmemory->arrayClass;
+    Object *obj = newObject(arrayClass, NULL, node->elements.size);
     for (int i = 0; i < node->elements.size; i++) {
         ObjectPointer result = evaluate(frame, node->elements.elements[i]);
-        noCheckSetIndexed(obj, i,  arrayClass->classNode->instSide->instVars.size, result);
+        noCheckSetIndexed(obj, i, arrayClass->classNode->instSide->instVars.size, result);
 
     }
     return registerObject(frame->objectmemory, obj);
@@ -122,20 +122,28 @@ ObjectPointer evaluate_PrimGetArraySizeNode(Frame *frame, PrimGetArraySizeNode *
 }
 
 ObjectPointer evaluate_PrimArrayAtNode(Frame *frame, PrimArrayAtNode *node) {
-    Object * obj = getObject(frame->objectmemory, evaluate(frame, node->value));
+    Object *obj = getObject(frame->objectmemory, evaluate(frame, node->value));
     return getIndexed(obj, node->index);
 }
 
 ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
-    Class * stringClass = frame->objectmemory->stringClass;
-    size_t len = strlen(node->value);
-    Object * obj = newObject(stringClass, NULL, len);
-    const char *src = (node->value);
-    size_t offset = sizeof(Object) +
-                    (sizeof(ObjectPointer) * stringClass->classNode->instSide->instVars.size) + sizeof(size_t);
-    char * dest = ((char *) obj) + offset;
-    memcpy(dest, src, len);
-    return registerObject(frame->objectmemory, obj);
+    Class *stringClass = frame->objectmemory->stringClass;
+    const char *src = node->value;
+    size_t len = strlen(src);
+    size_t hash = string_hash(src, len);
+
+    // String class should never have instVars:
+    BytesObject *obj = malloc(sizeof(BytesObject) + len);
+    obj->class = stringClass;
+    obj->size = len;
+    memcpy(obj->bytes, src, len);
+
+    ObjectPointer current = findObjectMatching(frame->objectmemory, obj, sizeof(BytesObject) + len, hash);
+    if (current != 0) {
+        free(obj);
+        return current;
+    }
+    return registerObjectWithHash(frame->objectmemory, obj, hash);
 }
 
 ObjectPointer evaluate_WriteTempNode(Frame *frame, WriteTempNode *node) {
@@ -145,13 +153,39 @@ ObjectPointer evaluate_WriteTempNode(Frame *frame, WriteTempNode *node) {
 }
 
 ObjectPointer evaluate_ReadTempNode(Frame *frame, ReadTempNode *node) {
-    return    frame->temps[node->index];
+    return frame->temps[node->index];
 }
 
 ObjectPointer evaluate_ReturnNode(Frame *frame, ReturnNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     return value;
 }
+
+ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *node) {
+    BytesObject *left = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->left));
+    BytesObject *right = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->right));
+    BytesObject *result = malloc(sizeof(BytesObject) + left->size + right->size);
+    result->size = left->size + right->size;
+    result->class = left->class;
+
+    char *srcLeft = ((char *) left) + sizeof(BytesObject);
+    char *srcRight = ((char *) right) + sizeof(BytesObject);
+
+    char *dest = result->bytes;
+    memcpy(dest, srcLeft, left->size);
+    char *dest2 = dest + left->size;
+    memcpy(dest2, srcRight, right->size);
+    uint32_t hash = string_hash(result->bytes, result->size);
+    return registerObjectWithHash(frame->objectmemory, result, hash);
+}
+
+ObjectPointer evaluate_PrimStringInternNode (Frame *frame, PrimStringInternNode *node) {
+    BytesObject *value = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->value));
+    uint32_t hash = string_hash(value->bytes, value->size);
+    // The "interned" object is always the first object found.
+    return findObjectMatching(frame->objectmemory, value, sizeof(BytesObject) + value->size, hash);
+}
+
 
 ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
@@ -203,6 +237,10 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_ReadTempNode(frame, (ReadTempNode *) node);
         case RETURN_NODE:
             return evaluate_ReturnNode(frame, (ReturnNode *) node);
+        case PRIM_STRING_CONCAT_NODE:
+            return evaluate_PrimStringConcatNode(frame, (PrimStringConcatNode *) node);
+        case PRIM_STRING_INTERN_NODE:
+            return evaluate_PrimStringInternNode(frame, (struct PrimStringInternNode *) node);
     }
     const char *typeLabel = NODE_LABELS[node->type];
     fprintf(stderr, "Invalid type: %S.\n", typeLabel);
@@ -229,7 +267,7 @@ ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, const char *selecto
     frame.selfp = selfp;
     frame.objectmemory = om;
     frame.arguments = arguments;
-    frame.temps = calloc(sizeof(ObjectPointer ), method->block->temporaries.size);
+    frame.temps = calloc(sizeof(ObjectPointer), method->block->temporaries.size);
     ObjectPointer result = evaluate(&frame, method->block->body);
     return result;
 }

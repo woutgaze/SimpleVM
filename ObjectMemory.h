@@ -19,6 +19,12 @@ typedef struct Object {
     Class *class;
 } Object;
 
+typedef struct BytesObject {
+    Class *class;
+    size_t size;
+    char bytes[];
+} BytesObject;
+
 typedef struct ObjectTableEntry {
     Object *object;
 } ObjectTableEntry;
@@ -38,7 +44,6 @@ typedef struct {
 typedef int ObjectPointer;
 
 typedef struct {
-    ObjectTable objectTable;
     int objectTableSize;
     ObjectPointer nilValue;
     ObjectPointer trueValue;
@@ -46,13 +51,15 @@ typedef struct {
     Class *arrayClass;
     Class *stringClass;
     Class *nilClass;
+    size_t nextTableIndex;
+    ObjectTable *objectTables;
 } ObjectMemory;
 
-void resizeObjectTable(ObjectMemory *om, int toAlloc);
-
-void growObjectTable(ObjectMemory *om);
+void growObjectTable(ObjectTable *objectTable);
 
 ObjectPointer registerObject(ObjectMemory *om, Object *obj);
+ObjectPointer registerObjectWithHash(ObjectMemory *om, Object *obj, size_t hash);
+ObjectPointer findObjectMatching(ObjectMemory *om, BytesObject *bytes, size_t size, size_t hash);
 
 Object *getObject(ObjectMemory *om, ObjectPointer op);
 

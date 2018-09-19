@@ -94,6 +94,20 @@ Node *readPrimSmallerThanNode_V1(FILE *fileptr) {
     return newPrimSmallerThan(left, right);
 }
 
+Node *readPrimStringConcatNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimStringConcat(left, right);
+}
+
+Node *readPrimStringInternNode_V1(FILE *fileptr) {
+    Node * value = (Node *) readNode_V1(fileptr);
+
+    return newPrimStringIntern(value);
+}
+
 Node *readReadArgNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
@@ -249,6 +263,10 @@ Node *readNode_V1(FILE *fileptr) {
             return readPrimNotNode_V1(fileptr);
         case PRIM_SMALLER_THAN_NODE:
             return readPrimSmallerThanNode_V1(fileptr);
+        case PRIM_STRING_CONCAT_NODE:
+            return readPrimStringConcatNode_V1(fileptr);
+        case PRIM_STRING_INTERN_NODE:
+            return readPrimStringInternNode_V1(fileptr);
         case READ_ARG_NODE:
             return readReadArgNode_V1(fileptr);
         case READ_INDEXED_NODE:

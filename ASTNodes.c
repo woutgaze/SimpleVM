@@ -99,6 +99,21 @@ Node *newPrimSmallerThan(Node * left, Node * right) {
     return (Node *) node;
 }
 
+Node *newPrimStringConcat(Node * left, Node * right) {
+    PrimStringConcatNode *node = (PrimStringConcatNode *) malloc(sizeof(PrimStringConcatNode));
+    node->super.type = PRIM_STRING_CONCAT_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimStringIntern(Node * value) {
+    PrimStringInternNode *node = (PrimStringInternNode *) malloc(sizeof(PrimStringInternNode));
+    node->super.type = PRIM_STRING_INTERN_NODE;
+    node->value = value;
+    return (Node *) node;
+}
+
 Node *newReadArg(uint32_t index) {
     ReadArgNode *node = (ReadArgNode *) malloc(sizeof(ReadArgNode));
     node->super.type = READ_ARG_NODE;
