@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Interpreter.h"
+#include "reader/NodeReader.h"
 
 void assertTrue(const char *description, bool value) {
     if (!value) {
@@ -275,6 +276,35 @@ void test_create_string() {
     printf("String: %s\n\n", getCString(om, v));
 }
 
+void test_read_string_node() {
+    ObjectMemory *om = createObjectMemory();
+    char bytes[] = { 0x53, 0x56, 0x01, 0x15, 0x04, 0x00, 0x4B, 0x61, 0x61, 0x73} ;
+    FILE *stream;
+
+    stream = fmemopen (bytes, -1, "r");
+    Node * node = readNodeFile(stream);
+    Method *methods[] = {createMethod("execute", node, 0)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    printf("String: %s\n\n", getCString(om, v));
+}
+
+void test_read_sequence_node() {
+    ObjectMemory *om = createObjectMemory();
+    char bytes[] = { 83, 86, 1, 14, 3, 0, 13, 0, 0, 0, 3, 0, 0, 0, 13, 1, 0, 0, 4, 0, 0, 0, 1, 2, 0, 0, 2, 1, 0} ;
+    FILE *stream;
+
+    stream = fmemopen (bytes, -1, "r");
+    Node * node = readNodeFile(stream);
+    Method *methods[] = {createMethod("execute", node, 0)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 7);
+}
+
+
 
 
 void runTest(const char *label, void (*testFN)()) {
@@ -305,6 +335,8 @@ int main() {
     runTest("test_array_construction", test_array_construction);
     runTest("test_array_construction_last", test_array_construction_last);
     runTest("test_create_string", test_create_string);
+    runTest("test_read_string_node", test_read_string_node);
+    runTest("test_read_sequence_node", test_read_sequence_node);
 
     printf("Done\n");
 }

@@ -32,7 +32,7 @@
 
 
 typedef struct {
-	int type;
+	uint16_t type;
 } Node;
 
 typedef struct {

@@ -1,6 +1,7 @@
 #include "ObjectMemory.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
 
@@ -75,7 +76,7 @@ char *getCString(ObjectMemory *om, ObjectPointer p) {
     size_t size = firstSlot[class->instVarSize];
     char * string = malloc(size + 1);
     memcpy(string, src, size);
-    string[size] = NULL;
+    string[size] = 0;
     return string;
 }
 
