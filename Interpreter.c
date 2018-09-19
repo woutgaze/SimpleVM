@@ -99,7 +99,7 @@ ObjectPointer evaluate_ArrayConstructionNode(Frame *frame, ArrayConstructionNode
     Object * obj = newObject(arrayClass, NULL, node->elements.size);
     for (int i = 0; i < node->elements.size; i++) {
         ObjectPointer result = evaluate(frame, node->elements.elements[i]);
-        noCheckSetIndexed(obj, i,  arrayClass->instVarSize, result);
+        noCheckSetIndexed(obj, i,  arrayClass->classNode->instSide->instVars.size, result);
 
     }
     return registerObject(frame->objectmemory, obj);
@@ -132,10 +132,25 @@ ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
     Object * obj = newObject(stringClass, NULL, len);
     const char *src = (node->value);
     size_t offset = sizeof(Object) +
-                    (sizeof(ObjectPointer) * stringClass->instVarSize) + sizeof(size_t);
+                    (sizeof(ObjectPointer) * stringClass->classNode->instSide->instVars.size) + sizeof(size_t);
     char * dest = ((char *) obj) + offset;
     memcpy(dest, src, len);
     return registerObject(frame->objectmemory, obj);
+}
+
+ObjectPointer evaluate_WriteTempNode(Frame *frame, WriteTempNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    frame->temps[node->index] = value;
+    return value;
+}
+
+ObjectPointer evaluate_ReadTempNode(Frame *frame, ReadTempNode *node) {
+    return    frame->temps[node->index];
+}
+
+ObjectPointer evaluate_ReturnNode(Frame *frame, ReturnNode *node) {
+    ObjectPointer value = evaluate(frame, node->value);
+    return value;
 }
 
 ObjectPointer evaluate(Frame *frame, Node *node) {
@@ -182,15 +197,23 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_PrimArrayAtNode(frame, (PrimArrayAtNode *) node);
         case STRING_NODE:
             return evaluate_StringNode(frame, (StringNode *) node);
+        case WRITE_TEMP_NODE:
+            return evaluate_WriteTempNode(frame, (WriteTempNode *) node);
+        case READ_TEMP_NODE:
+            return evaluate_ReadTempNode(frame, (ReadTempNode *) node);
+        case RETURN_NODE:
+            return evaluate_ReturnNode(frame, (ReturnNode *) node);
     }
-    fprintf(stderr, "Invalid type.\n");
+    const char *typeLabel = NODE_LABELS[node->type];
+    fprintf(stderr, "Invalid type: %S.\n", typeLabel);
     exit(-1);
 }
 
-Method *lookupSelector(Class *class, const char *selector) {
-    for (int i = 0; i < class->methodsSize; i++) {
-        Method *method = class->methods[i];
-        if (strcmp(method->name, selector) == 0) return method;
+MethodNode *lookupSelector(Class *class, const char *selector) {
+    MethodNodeArray methods = class->classNode->instSide->methods;
+    for (int i = 0; i < methods.size; i++) {
+        MethodNode *method = methods.elements[i];
+        if (strcmp(method->selector, selector) == 0) return method;
     }
     if (class->superClass) return lookupSelector(class->superClass, selector);
     fprintf(stderr, "Selector not found: #%s\n", selector);
@@ -199,13 +222,14 @@ Method *lookupSelector(Class *class, const char *selector) {
 
 ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, const char *selector, ObjectPointer *arguments) {
     Object *self = getObject(om, selfp);
-    Method *method = lookupSelector(self->class, selector);
+    MethodNode *method = lookupSelector(self->class, selector);
 
     Frame frame;
     frame.self = self;
     frame.selfp = selfp;
     frame.objectmemory = om;
     frame.arguments = arguments;
-    ObjectPointer result = evaluate(&frame, method->node);
+    frame.temps = calloc(sizeof(ObjectPointer ), method->block->temporaries.size);
+    ObjectPointer result = evaluate(&frame, method->block->body);
     return result;
 }

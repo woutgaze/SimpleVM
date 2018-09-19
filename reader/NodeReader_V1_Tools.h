@@ -20,6 +20,7 @@ Node *readNode_V1(FILE *fileptr);
 
 NodeArray readNodeArray_V1(FILE *fileptr);
 ArgumentNodeArray readArgumentNodeArray_V1(FILE *fileptr);
+MethodNodeArray readMethodNodeArray_V1(FILE *fileptr);
 
 
 

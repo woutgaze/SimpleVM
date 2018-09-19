@@ -23,19 +23,10 @@ typedef struct ObjectTableEntry {
     Object *object;
 } ObjectTableEntry;
 
-typedef struct {
-    const char *name;
-    Node *node;
-    size_t numArgs;
-} Method;
-
 typedef struct Class {
     Object super;
-    Class *superClass;
-    size_t instVarSize;
-    Method **methods;
-    size_t methodsSize;
-    int indexingType;
+    ClassNode * classNode;
+    Class * superClass;
 } Class;
 
 typedef struct {
@@ -54,6 +45,7 @@ typedef struct {
     ObjectPointer falseValue;
     Class *arrayClass;
     Class *stringClass;
+    Class *nilClass;
 } ObjectMemory;
 
 void resizeObjectTable(ObjectMemory *om, int toAlloc);
@@ -86,10 +78,11 @@ ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[
 
 Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
-Method *createMethod(const char *selector, Node *node, int numArgs);
-Method *createMethodFromNode(const char *selector, MethodNode *methodNode);
+MethodNode *createMethod(const char *selector, Node *node);
 
-Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType);
+Class *createClass(size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType);
+
+Class *createClassFromNode(ClassNode *classNode);
 
 ObjectMemory *createObjectMemory();
 

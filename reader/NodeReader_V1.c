@@ -25,11 +25,11 @@ Node *readBoolNode_V1(FILE *fileptr) {
 }
 
 Node *readConditionalNode_V1(FILE *fileptr) {
-    Node * condition = readNode_V1(fileptr);
+    Node * condition = (Node *) readNode_V1(fileptr);
 
-    Node * trueBranch = readNode_V1(fileptr);
+    Node * trueBranch = (Node *) readNode_V1(fileptr);
 
-    Node * falseBranch = readNode_V1(fileptr);
+    Node * falseBranch = (Node *) readNode_V1(fileptr);
 
     return newConditional(condition, trueBranch, falseBranch);
 }
@@ -41,7 +41,7 @@ Node *readIntNode_V1(FILE *fileptr) {
 }
 
 Node *readNaryMessageNode_V1(FILE *fileptr) {
-    Node * receiver = readNode_V1(fileptr);
+    Node * receiver = (Node *) readNode_V1(fileptr);
 
     const char * selector = readString_V1(fileptr);
 
@@ -51,15 +51,15 @@ Node *readNaryMessageNode_V1(FILE *fileptr) {
 }
 
 Node *readPrimAddNode_V1(FILE *fileptr) {
-    Node * left = readNode_V1(fileptr);
+    Node * left = (Node *) readNode_V1(fileptr);
 
-    Node * right = readNode_V1(fileptr);
+    Node * right = (Node *) readNode_V1(fileptr);
 
     return newPrimAdd(left, right);
 }
 
 Node *readPrimArrayAtNode_V1(FILE *fileptr) {
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     uint32_t index = readIndex_V1(fileptr);
 
@@ -67,29 +67,29 @@ Node *readPrimArrayAtNode_V1(FILE *fileptr) {
 }
 
 Node *readPrimEqualsNode_V1(FILE *fileptr) {
-    Node * left = readNode_V1(fileptr);
+    Node * left = (Node *) readNode_V1(fileptr);
 
-    Node * right = readNode_V1(fileptr);
+    Node * right = (Node *) readNode_V1(fileptr);
 
     return newPrimEquals(left, right);
 }
 
 Node *readPrimGetArraySizeNode_V1(FILE *fileptr) {
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newPrimGetArraySize(value);
 }
 
 Node *readPrimNotNode_V1(FILE *fileptr) {
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newPrimNot(value);
 }
 
 Node *readPrimSmallerThanNode_V1(FILE *fileptr) {
-    Node * left = readNode_V1(fileptr);
+    Node * left = (Node *) readNode_V1(fileptr);
 
-    Node * right = readNode_V1(fileptr);
+    Node * right = (Node *) readNode_V1(fileptr);
 
     return newPrimSmallerThan(left, right);
 }
@@ -119,7 +119,7 @@ Node *readReadTempNode_V1(FILE *fileptr) {
 }
 
 Node *readReturnNode_V1(FILE *fileptr) {
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newReturn(value);
 }
@@ -141,7 +141,7 @@ Node *readStringNode_V1(FILE *fileptr) {
 }
 
 Node *readUnaryMessageNode_V1(FILE *fileptr) {
-    Node * receiver = readNode_V1(fileptr);
+    Node * receiver = (Node *) readNode_V1(fileptr);
 
     const char * selector = readString_V1(fileptr);
 
@@ -149,9 +149,9 @@ Node *readUnaryMessageNode_V1(FILE *fileptr) {
 }
 
 Node *readWhileTrueNode_V1(FILE *fileptr) {
-    Node * condition = readNode_V1(fileptr);
+    Node * condition = (Node *) readNode_V1(fileptr);
 
-    Node * body = readNode_V1(fileptr);
+    Node * body = (Node *) readNode_V1(fileptr);
 
     return newWhileTrue(condition, body);
 }
@@ -159,7 +159,7 @@ Node *readWhileTrueNode_V1(FILE *fileptr) {
 Node *readWriteIndexedNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newWriteIndexed(index, value);
 }
@@ -167,7 +167,7 @@ Node *readWriteIndexedNode_V1(FILE *fileptr) {
 Node *readWriteInstVarNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newWriteInstVar(index, value);
 }
@@ -175,7 +175,7 @@ Node *readWriteInstVarNode_V1(FILE *fileptr) {
 Node *readWriteTempNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
-    Node * value = readNode_V1(fileptr);
+    Node * value = (Node *) readNode_V1(fileptr);
 
     return newWriteTemp(index, value);
 }
@@ -185,7 +185,7 @@ Node *readBlockNode_V1(FILE *fileptr) {
 
     ArgumentNodeArray temporaries = readArgumentNodeArray_V1(fileptr);
 
-    Node * body = readNode_V1(fileptr);
+    Node * body = (Node *) readNode_V1(fileptr);
 
     return newBlock(arguments.elements, arguments.size, temporaries.elements, temporaries.size, body);
 }
@@ -193,9 +193,31 @@ Node *readBlockNode_V1(FILE *fileptr) {
 Node *readMethodNode_V1(FILE *fileptr) {
     const char * selector = readString_V1(fileptr);
 
-    BlockNode * block = readNode_V1(fileptr);
+    BlockNode * block = (BlockNode *) readNode_V1(fileptr);
 
     return newMethod(selector, block);
+}
+
+Node *readClassSideNode_V1(FILE *fileptr) {
+    ArgumentNodeArray instVars = readArgumentNodeArray_V1(fileptr);
+
+    MethodNodeArray methods = readMethodNodeArray_V1(fileptr);
+
+    return newClassSide(instVars.elements, instVars.size, methods.elements, methods.size);
+}
+
+Node *readClassNode_V1(FILE *fileptr) {
+    const char * name = readString_V1(fileptr);
+
+    const char * superName = readString_V1(fileptr);
+
+    uint32_t indexedType = readIndex_V1(fileptr);
+
+    ClassSideNode * instSide = (ClassSideNode *) readNode_V1(fileptr);
+
+    ClassSideNode * classSide = (ClassSideNode *) readNode_V1(fileptr);
+
+    return newClass(name, superName, indexedType, instSide, classSide);
 }
 
 Node *readNode_V1(FILE *fileptr) {
@@ -257,6 +279,10 @@ Node *readNode_V1(FILE *fileptr) {
             return readBlockNode_V1(fileptr);
         case METHOD_NODE:
             return readMethodNode_V1(fileptr);
+        case CLASS_SIDE_NODE:
+            return readClassSideNode_V1(fileptr);
+        case CLASS_NODE:
+            return readClassNode_V1(fileptr);
     }
 
     fprintf(stderr, "Unknown type.\n");

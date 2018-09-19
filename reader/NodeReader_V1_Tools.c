@@ -62,3 +62,16 @@ ArgumentNodeArray readArgumentNodeArray_V1(FILE *fileptr) {
     return value;
 }
 
+MethodNodeArray readMethodNodeArray_V1(FILE *fileptr) {
+    MethodNodeArray value;
+    uint16_t size;
+    if (!fread(&size, sizeof(uint16_t), 1, fileptr) == 1) readFailed_V1();
+    value.size =size;
+    value.elements = malloc(size * sizeof(Node *));
+    for (int i = 0; i < size; i++) {
+        value.elements[i] = (MethodNode*) readNode_V1(fileptr);
+    }
+    return value;
+}
+
+

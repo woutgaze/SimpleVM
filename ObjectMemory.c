@@ -5,6 +5,8 @@
 
 const int INTMASK = 1 << ((sizeof(int) * 8) - 1);
 
+Class *createClassFromNode(ClassNode *classNode);
+
 void resizeObjectTable(ObjectMemory *om, int toAlloc) {
 //    printf("resizeObjectTable: %d\n", toAlloc);
     om->objectTable.size += toAlloc;
@@ -62,18 +64,20 @@ bool getBool(ObjectMemory *om, ObjectPointer p) {
 char *getCString(ObjectMemory *om, ObjectPointer p) {
     Object * obj = getObject(om, p);
     Class *class = obj->class;
-    if (!(class->indexingType == BYTE_INDEXED)) {
+    uint32_t indexedType = class->classNode->indexedType;
+    if (!(indexedType == BYTE_INDEXED)) {
         fprintf(stderr, "Object is not byte indexed.\n");
         exit(-1);
     }
 
+    size_t instVarsSize = class->classNode->instSide->instVars.size;
     size_t offset = sizeof(Object) +
-                    (sizeof(ObjectPointer) * class->instVarSize) + sizeof(size_t);
+                    (sizeof(ObjectPointer) * instVarsSize) + sizeof(size_t);
     char * src = ((char *) obj) + offset;
 
 
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t size = firstSlot[class->instVarSize];
+    size_t size = firstSlot[class->classNode->instSide->instVars.size];
     char * string = malloc(size + 1);
     memcpy(string, src, size);
     string[size] = 0;
@@ -92,32 +96,33 @@ void setInstVar(Object *obj, int instVarIndex, ObjectPointer a) {
 
 ObjectPointer getIndexed(Object *obj, size_t index) {
     Class *class = obj->class;
-    if (!(class->indexingType == OBJECT_INDEXED)) {
+    uint32_t indexedType = class->classNode->indexedType;
+    if (!(indexedType == OBJECT_INDEXED)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t indexedSize = firstSlot[class->instVarSize];
+    size_t indexedSize = firstSlot[class->classNode->instSide->instVars.size];
     if (index >= indexedSize) {
         fprintf(stderr, "Index out of bounds.\n");
         exit(-1);
     }
-    return (firstSlot[class->instVarSize + 1 + index]);
+    return (firstSlot[class->classNode->instSide->instVars.size + 1 + index]);
 }
 
 void setIndexed(Object *obj, size_t index, ObjectPointer a) {
     Class *class = obj->class;
-    if (!(class->indexingType == OBJECT_INDEXED)) {
+    if (!(class->classNode->indexedType == OBJECT_INDEXED)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t indexedSize = firstSlot[class->instVarSize];
+    size_t indexedSize = firstSlot[class->classNode->instSide->instVars.size];
     if (index >= indexedSize) {
         fprintf(stderr, "Index out of bounds.\n");
         exit(-1);
     }
-    firstSlot[class->instVarSize + 1 + index] = a;
+    firstSlot[class->classNode->instSide->instVars.size + 1 + index] = a;
 }
 
 void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPointer a) {
@@ -128,57 +133,46 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 
 size_t getIndexedSize(Object *obj) {
     Class *class = obj->class;
-    if ((class->indexingType == NONE)) {
+    if ((class->classNode->indexedType == NONE)) {
         fprintf(stderr, "Not indexable.\n");
         exit(-1);
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    return firstSlot[class->instVarSize];
+    return firstSlot[class->classNode->instSide->instVars.size];
 }
 
-Method *createMethod(const char *selector, Node *node, int numArgs) {
-    Method *method = (Method *) malloc(sizeof(Method));
-
-    method->name = selector;
-    method->node = node;
-    method->numArgs = numArgs;
-    return method;
+MethodNode *createMethod(const char *selector, Node *node) {
+    return (MethodNode *) newMethod(selector, (BlockNode *) newBlock(NULL, 0, NULL, 0, node) );
 }
 
-Method *createMethodFromNode(const char *selector, MethodNode *methodNode) {
-    Method *method = (Method *) malloc(sizeof(Method));
-
-    method->name = selector;
-    method->node = methodNode->block->body;
-    method->numArgs = methodNode->block->arguments.size;
-    return method;
-}
-
-Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType) {
+Class *createClassFromNode(ClassNode *classNode) {
     Class *class = (Class *) malloc(sizeof(Class));
     class->super.class = NULL;
-    class->superClass = NULL;
-    class->instVarSize = instVarSize;
-    class->methodsSize = methodsSize;
-    class->methods = (Method **) malloc(sizeof(Method **) * methodsSize);
-    class->indexingType = indexingType;
-    for (int i = 0; i < methodsSize; i++) {
-        class->methods[i] = methods[i];
-    }
+    class->classNode = classNode;
     return class;
 }
 
+Class *createClass(size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType) {
+    ArgumentNode *instVars[] = {newArgument("t1"), newArgument("t2"), newArgument("t3")};
+    ClassSideNode *instSide = (ClassSideNode*) newClassSide(instVars, instVarSize, methods, methodsSize);
+    ClassSideNode *classSide = (ClassSideNode*) newClassSide(NULL, 0, NULL, 0);
+    ClassNode *classNode = (ClassNode *) newClass("Test", "", indexingType, instSide, classSide);
+    return createClassFromNode(classNode);
+}
+
 ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize) {
-    Object *obj = newObject(class, values, indexedSize);
+    Object *obj = newObject(class ? class : om->nilClass, values, indexedSize);
     return registerObject(om, obj);
 }
 
 Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
-    size_t instVarSize = class ? class->instVarSize : 0;
+    size_t instVarSize = class->classNode->instSide->instVars.size;
+    
     size_t varSize = 0;
-    if (class && (class->indexingType == OBJECT_INDEXED)) {
+    uint32_t indexedType = class->classNode->indexedType;
+    if ((indexedType == OBJECT_INDEXED)) {
         varSize = sizeof(size_t) + (sizeof(ObjectPointer) * indexedSize);
-    } else if (class && (class->indexingType == BYTE_INDEXED)) {
+    } else if ((indexedType == BYTE_INDEXED)) {
         varSize = sizeof(size_t) + indexedSize;
 
     }
@@ -189,7 +183,7 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
     for (int i = 0; i < instVarSize; i++) {
         setInstVar(obj, i, values[i]);
     }
-    if (class && (class->indexingType != NONE)) {
+    if ((indexedType != NONE)) {
         ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
         (firstSlot[instVarSize]) = indexedSize;
     }
@@ -201,10 +195,12 @@ ObjectMemory *createObjectMemory() {
     om->objectTable.entries = NULL;
     om->objectTable.used = 0;
     om->objectTable.size = 0;
-    om->nilValue = createObject(om, NULL, NULL, 0);
+    om->nilClass = createClass(0, NULL, 0, NONE);
+    om->nilValue = createObject(om, om->nilClass, NULL, 0);
     om->trueValue = createObject(om, NULL, NULL, 0);
     om->falseValue = createObject(om, NULL, NULL, 0);
     om->arrayClass = createClass(0, NULL, 0, OBJECT_INDEXED);
     om->stringClass = createClass(0, NULL, 0, BYTE_INDEXED);
+
     return om;
 }

@@ -13,11 +13,12 @@ typedef struct Frame {
     ObjectPointer selfp;
     ObjectMemory *objectmemory;
     ObjectPointer *arguments;
+    ObjectPointer *temps;
 } Frame;
 
 ObjectPointer evaluate(Frame *frame, Node *node);
 
-Method *lookupSelector(Class *class, const char *selector);
+MethodNode *lookupSelector(Class *class, const char *selector);
 
 ObjectPointer perform(ObjectMemory *om, ObjectPointer op, const char *selector, ObjectPointer *arguments);
 

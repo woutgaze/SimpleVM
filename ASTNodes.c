@@ -214,3 +214,24 @@ Node *newMethod(const char * selector, BlockNode * block) {
     return (Node *) node;
 }
 
+Node *newClassSide(ArgumentNode ** instVars, uint32_t instVars_size, MethodNode ** methods, uint32_t methods_size) {
+    ClassSideNode *node = (ClassSideNode *) malloc(sizeof(ClassSideNode));
+    node->super.type = CLASS_SIDE_NODE;
+    node->instVars.elements = instVars;
+    node->instVars.size = instVars_size;
+    node->methods.elements = methods;
+    node->methods.size = methods_size;
+    return (Node *) node;
+}
+
+Node *newClass(const char * name, const char * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide) {
+    ClassNode *node = (ClassNode *) malloc(sizeof(ClassNode));
+    node->super.type = CLASS_NODE;
+    node->name = name;
+    node->superName = superName;
+    node->indexedType = indexedType;
+    node->instSide = instSide;
+    node->classSide = classSide;
+    return (Node *) node;
+}
+
