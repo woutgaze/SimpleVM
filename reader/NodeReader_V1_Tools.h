@@ -19,6 +19,7 @@ uint16_t readIndex_V1(FILE *fileptr);
 Node *readNode_V1(FILE *fileptr);
 
 NodeArray readNodeArray_V1(FILE *fileptr);
+ArgumentNodeArray readArgumentNodeArray_V1(FILE *fileptr);
 
 
 

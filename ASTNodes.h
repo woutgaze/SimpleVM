@@ -7,221 +7,306 @@
 #include <stdbool.h>
 
 
-#define INT_NODE 0
-#define PRIM_ADD_NODE 1
-#define READ_INST_VAR_NODE 2
-#define UNARY_MESSAGE_NODE 3
-#define NARY_MESSAGE_NODE 4
-#define SELF_NODE 5
-#define READ_ARG_NODE 6
-#define RETURN_NODE 7
-#define CONDITIONAL_NODE 8
-#define WHILE_TRUE_NODE 9
-#define BOOL_NODE 10
-#define PRIM_EQUALS_NODE 11
-#define PRIM_SMALLER_THAN_NODE 12
-#define WRITE_INST_VAR_NODE 13
-#define SEQUENCE_NODE 14
-#define PRIM_NOT_NODE 15
-#define ARRAY_CONSTRUCTION_NODE 16
-#define READ_INDEXED_NODE 17
-#define WRITE_INDEXED_NODE 18
-#define PRIM_GET_ARRAY_SIZE_NODE 19
-#define PRIM_ARRAY_AT_NODE 20
-#define STRING_NODE 21
 #define ARGUMENT_NODE 22
+#define ARRAY_CONSTRUCTION_NODE 16
+#define BOOL_NODE 10
+#define CONDITIONAL_NODE 8
+#define INT_NODE 0
+#define NARY_MESSAGE_NODE 4
+#define PRIM_ADD_NODE 1
+#define PRIM_ARRAY_AT_NODE 20
+#define PRIM_EQUALS_NODE 11
+#define PRIM_GET_ARRAY_SIZE_NODE 19
+#define PRIM_NOT_NODE 15
+#define PRIM_SMALLER_THAN_NODE 12
+#define READ_ARG_NODE 6
+#define READ_INDEXED_NODE 17
+#define READ_INST_VAR_NODE 2
+#define READ_TEMP_NODE 25
+#define RETURN_NODE 7
+#define SELF_NODE 5
+#define SEQUENCE_NODE 14
+#define STRING_NODE 21
+#define UNARY_MESSAGE_NODE 3
+#define WHILE_TRUE_NODE 9
+#define WRITE_INDEXED_NODE 18
+#define WRITE_INST_VAR_NODE 13
+#define WRITE_TEMP_NODE 26
+#define BLOCK_NODE 24
 #define METHOD_NODE 23
 
 
-typedef struct {
+typedef struct Node {
 	uint16_t type;
 } Node;
 
-typedef struct {
+typedef struct ArgumentNode ArgumentNode;
+
+typedef struct ArrayConstructionNode ArrayConstructionNode;
+
+typedef struct BoolNode BoolNode;
+
+typedef struct ConditionalNode ConditionalNode;
+
+typedef struct IntNode IntNode;
+
+typedef struct NaryMessageNode NaryMessageNode;
+
+typedef struct PrimAddNode PrimAddNode;
+
+typedef struct PrimArrayAtNode PrimArrayAtNode;
+
+typedef struct PrimEqualsNode PrimEqualsNode;
+
+typedef struct PrimGetArraySizeNode PrimGetArraySizeNode;
+
+typedef struct PrimNotNode PrimNotNode;
+
+typedef struct PrimSmallerThanNode PrimSmallerThanNode;
+
+typedef struct ReadArgNode ReadArgNode;
+
+typedef struct ReadIndexedNode ReadIndexedNode;
+
+typedef struct ReadInstVarNode ReadInstVarNode;
+
+typedef struct ReadTempNode ReadTempNode;
+
+typedef struct ReturnNode ReturnNode;
+
+typedef struct SelfNode SelfNode;
+
+typedef struct SequenceNode SequenceNode;
+
+typedef struct StringNode StringNode;
+
+typedef struct UnaryMessageNode UnaryMessageNode;
+
+typedef struct WhileTrueNode WhileTrueNode;
+
+typedef struct WriteIndexedNode WriteIndexedNode;
+
+typedef struct WriteInstVarNode WriteInstVarNode;
+
+typedef struct WriteTempNode WriteTempNode;
+
+typedef struct BlockNode BlockNode;
+
+typedef struct MethodNode MethodNode;
+
+typedef struct ArgumentNodeArray {
+	ArgumentNode ** elements;
+	uint32_t size;
+} ArgumentNodeArray;
+
+typedef struct NodeArray {
 	Node ** elements;
 	uint32_t size;
 } NodeArray;
 
-typedef struct {
+struct ArgumentNode {
 	Node super;
-	int value;
-} IntNode;
+	const char * name;
+};
 
-typedef struct {
+struct ArrayConstructionNode {
 	Node super;
-	Node * left;
-	Node * right;
-} PrimAddNode;
+	NodeArray elements;
+};
 
-typedef struct {
+struct BoolNode {
 	Node super;
-	uint32_t index;
-} ReadInstVarNode;
+	bool value;
+};
 
-typedef struct {
-	Node super;
-	Node * receiver;
-	const char * selector;
-} UnaryMessageNode;
-
-typedef struct {
-	Node super;
-	Node * receiver;
-	const char * selector;
-	NodeArray arguments;
-} NaryMessageNode;
-
-typedef struct {
-	Node super;
-} SelfNode;
-
-typedef struct {
-	Node super;
-	uint32_t index;
-} ReadArgNode;
-
-typedef struct {
-	Node super;
-	Node * value;
-} ReturnNode;
-
-typedef struct {
+struct ConditionalNode {
 	Node super;
 	Node * condition;
 	Node * trueBranch;
 	Node * falseBranch;
-} ConditionalNode;
+};
 
-typedef struct {
+struct IntNode {
+	Node super;
+	int value;
+};
+
+struct NaryMessageNode {
+	Node super;
+	Node * receiver;
+	const char * selector;
+	NodeArray arguments;
+};
+
+struct PrimAddNode {
+	Node super;
+	Node * left;
+	Node * right;
+};
+
+struct PrimArrayAtNode {
+	Node super;
+	Node * value;
+	uint32_t index;
+};
+
+struct PrimEqualsNode {
+	Node super;
+	Node * left;
+	Node * right;
+};
+
+struct PrimGetArraySizeNode {
+	Node super;
+	Node * value;
+};
+
+struct PrimNotNode {
+	Node super;
+	Node * value;
+};
+
+struct PrimSmallerThanNode {
+	Node super;
+	Node * left;
+	Node * right;
+};
+
+struct ReadArgNode {
+	Node super;
+	uint32_t index;
+};
+
+struct ReadIndexedNode {
+	Node super;
+	uint32_t index;
+};
+
+struct ReadInstVarNode {
+	Node super;
+	uint32_t index;
+};
+
+struct ReadTempNode {
+	Node super;
+	uint32_t index;
+};
+
+struct ReturnNode {
+	Node super;
+	Node * value;
+};
+
+struct SelfNode {
+	Node super;
+};
+
+struct SequenceNode {
+	Node super;
+	NodeArray statements;
+};
+
+struct StringNode {
+	Node super;
+	const char * value;
+};
+
+struct UnaryMessageNode {
+	Node super;
+	Node * receiver;
+	const char * selector;
+};
+
+struct WhileTrueNode {
 	Node super;
 	Node * condition;
 	Node * body;
-} WhileTrueNode;
+};
 
-typedef struct {
-	Node super;
-	bool value;
-} BoolNode;
-
-typedef struct {
-	Node super;
-	Node * left;
-	Node * right;
-} PrimEqualsNode;
-
-typedef struct {
-	Node super;
-	Node * left;
-	Node * right;
-} PrimSmallerThanNode;
-
-typedef struct {
+struct WriteIndexedNode {
 	Node super;
 	uint32_t index;
 	Node * value;
-} WriteInstVarNode;
+};
 
-typedef struct {
-	Node super;
-	NodeArray statements;
-} SequenceNode;
-
-typedef struct {
-	Node super;
-	Node * value;
-} PrimNotNode;
-
-typedef struct {
-	Node super;
-	NodeArray elements;
-} ArrayConstructionNode;
-
-typedef struct {
-	Node super;
-	uint32_t index;
-} ReadIndexedNode;
-
-typedef struct {
+struct WriteInstVarNode {
 	Node super;
 	uint32_t index;
 	Node * value;
-} WriteIndexedNode;
+};
 
-typedef struct {
+struct WriteTempNode {
 	Node super;
-	Node * value;
-} PrimGetArraySizeNode;
-
-typedef struct {
-	Node super;
-	Node * value;
 	uint32_t index;
-} PrimArrayAtNode;
+	Node * value;
+};
 
-typedef struct {
+struct BlockNode {
 	Node super;
-	const char * value;
-} StringNode;
+	ArgumentNodeArray arguments;
+	ArgumentNodeArray temporaries;
+	Node * body;
+};
 
-typedef struct {
-	Node super;
-	const char * name;
-} ArgumentNode;
-
-typedef struct {
+struct MethodNode {
 	Node super;
 	const char * selector;
-	NodeArray arguments;
-	Node * body;
-} MethodNode;
-
-Node *newInt(int value);
-
-Node *newPrimAdd(Node * left, Node * right);
-
-Node *newReadInstVar(uint32_t index);
-
-Node *newUnaryMessage(Node * receiver, const char * selector);
-
-Node *newNaryMessage(Node * receiver, const char * selector, Node ** arguments, uint32_t arguments_size);
-
-Node *newSelf();
-
-Node *newReadArg(uint32_t index);
-
-Node *newReturn(Node * value);
-
-Node *newConditional(Node * condition, Node * trueBranch, Node * falseBranch);
-
-Node *newWhileTrue(Node * condition, Node * body);
-
-Node *newBool(bool value);
-
-Node *newPrimEquals(Node * left, Node * right);
-
-Node *newPrimSmallerThan(Node * left, Node * right);
-
-Node *newWriteInstVar(uint32_t index, Node * value);
-
-Node *newSequence(Node ** statements, uint32_t statements_size);
-
-Node *newPrimNot(Node * value);
-
-Node *newArrayConstruction(Node ** elements, uint32_t elements_size);
-
-Node *newReadIndexed(uint32_t index);
-
-Node *newWriteIndexed(uint32_t index, Node * value);
-
-Node *newPrimGetArraySize(Node * value);
-
-Node *newPrimArrayAt(Node * value, uint32_t index);
-
-Node *newString(const char * value);
+	BlockNode * block;
+};
 
 Node *newArgument(const char * name);
 
-Node *newMethod(const char * selector, Node ** arguments, uint32_t arguments_size, Node * body);
+Node *newArrayConstruction(Node ** elements, uint32_t elements_size);
+
+Node *newBool(bool value);
+
+Node *newConditional(Node * condition, Node * trueBranch, Node * falseBranch);
+
+Node *newInt(int value);
+
+Node *newNaryMessage(Node * receiver, const char * selector, Node ** arguments, uint32_t arguments_size);
+
+Node *newPrimAdd(Node * left, Node * right);
+
+Node *newPrimArrayAt(Node * value, uint32_t index);
+
+Node *newPrimEquals(Node * left, Node * right);
+
+Node *newPrimGetArraySize(Node * value);
+
+Node *newPrimNot(Node * value);
+
+Node *newPrimSmallerThan(Node * left, Node * right);
+
+Node *newReadArg(uint32_t index);
+
+Node *newReadIndexed(uint32_t index);
+
+Node *newReadInstVar(uint32_t index);
+
+Node *newReadTemp(uint32_t index);
+
+Node *newReturn(Node * value);
+
+Node *newSelf();
+
+Node *newSequence(Node ** statements, uint32_t statements_size);
+
+Node *newString(const char * value);
+
+Node *newUnaryMessage(Node * receiver, const char * selector);
+
+Node *newWhileTrue(Node * condition, Node * body);
+
+Node *newWriteIndexed(uint32_t index, Node * value);
+
+Node *newWriteInstVar(uint32_t index, Node * value);
+
+Node *newWriteTemp(uint32_t index, Node * value);
+
+Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, Node * body);
+
+Node *newMethod(const char * selector, BlockNode * block);
 
 
 #endif //SIMPLEVM_ASTNODES_H

@@ -304,6 +304,20 @@ void test_read_sequence_node() {
     assertEquals(getInt(v), 7);
 }
 
+void test_read_method_node() {
+    ObjectMemory *om = createObjectMemory();
+    char bytes[] = { 83, 86, 1, 23, 7, 0, 101, 120, 101, 99, 117, 116, 101, 24, 0, 0, 1, 0, 22, 3, 0, 102, 111, 111, 14, 2, 0, 26, 0, 0, 21, 4, 0, 75, 97, 97, 115, 7, 25, 0, 0 } ;
+    FILE *stream;
+
+    stream = fmemopen (bytes, -1, "r");
+    MethodNode * methodNode = readNodeFile(stream);
+    Method *methods[] = {createMethodFromNode("execute", methodNode)};
+    Class *class = createClass(0, methods, 1, false);
+    ObjectPointer op = createObject(om, class, NULL, 0);
+    ObjectPointer v = perform(om, op, "execute", NULL);
+    assertEquals(getInt(v), 7);
+}
+
 
 
 
@@ -337,6 +351,7 @@ int main() {
     runTest("test_create_string", test_create_string);
     runTest("test_read_string_node", test_read_string_node);
     runTest("test_read_sequence_node", test_read_sequence_node);
+    runTest("test_read_method_node", test_read_method_node);
 
     printf("Done\n");
 }

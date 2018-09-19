@@ -145,6 +145,15 @@ Method *createMethod(const char *selector, Node *node, int numArgs) {
     return method;
 }
 
+Method *createMethodFromNode(const char *selector, MethodNode *methodNode) {
+    Method *method = (Method *) malloc(sizeof(Method));
+
+    method->name = selector;
+    method->node = methodNode->block->body;
+    method->numArgs = methodNode->block->arguments.size;
+    return method;
+}
+
 Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType) {
     Class *class = (Class *) malloc(sizeof(Class));
     class->super.class = NULL;

@@ -87,6 +87,7 @@ ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[
 Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
 Method *createMethod(const char *selector, Node *node, int numArgs);
+Method *createMethodFromNode(const char *selector, MethodNode *methodNode);
 
 Class *createClass(size_t instVarSize, Method *methods[1], size_t methodsSize, int indexingType);
 
