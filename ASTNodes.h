@@ -124,18 +124,18 @@ typedef struct ClassSideNode ClassSideNode;
 typedef struct ClassNode ClassNode;
 
 typedef struct ArgumentNodeArray {
-	ArgumentNode ** elements;
 	uint32_t size;
+	ArgumentNode ** elements;
 } ArgumentNodeArray;
 
 typedef struct MethodNodeArray {
-	MethodNode ** elements;
 	uint32_t size;
+	MethodNode ** elements;
 } MethodNodeArray;
 
 typedef struct NodeArray {
-	Node ** elements;
 	uint32_t size;
+	Node ** elements;
 } NodeArray;
 
 struct ArgumentNode {
