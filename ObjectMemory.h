@@ -51,9 +51,11 @@ typedef struct {
     ObjectPointer nilValue;
     ObjectPointer trueValue;
     ObjectPointer falseValue;
+    Class *nilClass;
     Class *arrayClass;
     Class *stringClass;
-    Class *nilClass;
+    Class *bytearrayClass;
+    Class *smallintegerClass;
     size_t nextTableIndex;
     ObjectTable classTable;
     ObjectTable *objectTables;

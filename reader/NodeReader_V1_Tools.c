@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include "NodeReader_V1_Tools.h"
 #include "../ASTNodes.h"
+#include "../DevTools.h"
 
 Node * readFailed_V1() {
-    fprintf(stderr, "Read failed.\n");
-    exit(-1);
+    panic("Read failed");
 }
 
 char * readString_V1(FILE *fileptr){

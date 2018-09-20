@@ -54,14 +54,6 @@ Node *readNilNode_V1(FILE *fileptr) {
     return newNil();
 }
 
-Node *readPrimAddNode_V1(FILE *fileptr) {
-    Node * left = (Node *) readNode_V1(fileptr);
-
-    Node * right = (Node *) readNode_V1(fileptr);
-
-    return newPrimAdd(left, right);
-}
-
 Node *readPrimArrayAtNode_V1(FILE *fileptr) {
     Node * value = (Node *) readNode_V1(fileptr);
 
@@ -82,6 +74,46 @@ Node *readPrimGetArraySizeNode_V1(FILE *fileptr) {
     Node * value = (Node *) readNode_V1(fileptr);
 
     return newPrimGetArraySize(value);
+}
+
+Node *readPrimIntAddNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntAdd(left, right);
+}
+
+Node *readPrimIntDivNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntDiv(left, right);
+}
+
+Node *readPrimIntMulNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntMul(left, right);
+}
+
+Node *readPrimIntRemNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntRem(left, right);
+}
+
+Node *readPrimIntSubNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntSub(left, right);
 }
 
 Node *readPrimNotNode_V1(FILE *fileptr) {
@@ -257,14 +289,22 @@ Node *readNode_V1(FILE *fileptr) {
             return readNaryMessageNode_V1(fileptr);
         case NIL_NODE:
             return readNilNode_V1(fileptr);
-        case PRIM_ADD_NODE:
-            return readPrimAddNode_V1(fileptr);
         case PRIM_ARRAY_AT_NODE:
             return readPrimArrayAtNode_V1(fileptr);
         case PRIM_EQUALS_NODE:
             return readPrimEqualsNode_V1(fileptr);
         case PRIM_GET_ARRAY_SIZE_NODE:
             return readPrimGetArraySizeNode_V1(fileptr);
+        case PRIM_INT_ADD_NODE:
+            return readPrimIntAddNode_V1(fileptr);
+        case PRIM_INT_DIV_NODE:
+            return readPrimIntDivNode_V1(fileptr);
+        case PRIM_INT_MUL_NODE:
+            return readPrimIntMulNode_V1(fileptr);
+        case PRIM_INT_REM_NODE:
+            return readPrimIntRemNode_V1(fileptr);
+        case PRIM_INT_SUB_NODE:
+            return readPrimIntSubNode_V1(fileptr);
         case PRIM_NOT_NODE:
             return readPrimNotNode_V1(fileptr);
         case PRIM_SMALLER_THAN_NODE:

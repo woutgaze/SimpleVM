@@ -59,14 +59,6 @@ Node *newNil() {
     return (Node *) node;
 }
 
-Node *newPrimAdd(Node * left, Node * right) {
-    PrimAddNode *node = (PrimAddNode *) malloc(sizeof(PrimAddNode));
-    node->super.type = PRIM_ADD_NODE;
-    node->left = left;
-    node->right = right;
-    return (Node *) node;
-}
-
 Node *newPrimArrayAt(Node * value, uint32_t index) {
     PrimArrayAtNode *node = (PrimArrayAtNode *) malloc(sizeof(PrimArrayAtNode));
     node->super.type = PRIM_ARRAY_AT_NODE;
@@ -87,6 +79,46 @@ Node *newPrimGetArraySize(Node * value) {
     PrimGetArraySizeNode *node = (PrimGetArraySizeNode *) malloc(sizeof(PrimGetArraySizeNode));
     node->super.type = PRIM_GET_ARRAY_SIZE_NODE;
     node->value = value;
+    return (Node *) node;
+}
+
+Node *newPrimIntAdd(Node * left, Node * right) {
+    PrimIntAddNode *node = (PrimIntAddNode *) malloc(sizeof(PrimIntAddNode));
+    node->super.type = PRIM_INT_ADD_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimIntDiv(Node * left, Node * right) {
+    PrimIntDivNode *node = (PrimIntDivNode *) malloc(sizeof(PrimIntDivNode));
+    node->super.type = PRIM_INT_DIV_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimIntMul(Node * left, Node * right) {
+    PrimIntMulNode *node = (PrimIntMulNode *) malloc(sizeof(PrimIntMulNode));
+    node->super.type = PRIM_INT_MUL_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimIntRem(Node * left, Node * right) {
+    PrimIntRemNode *node = (PrimIntRemNode *) malloc(sizeof(PrimIntRemNode));
+    node->super.type = PRIM_INT_REM_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimIntSub(Node * left, Node * right) {
+    PrimIntSubNode *node = (PrimIntSubNode *) malloc(sizeof(PrimIntSubNode));
+    node->super.type = PRIM_INT_SUB_NODE;
+    node->left = left;
+    node->right = right;
     return (Node *) node;
 }
 

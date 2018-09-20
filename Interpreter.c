@@ -12,7 +12,7 @@ ObjectPointer evaluate_IntNode(Frame *frame, IntNode *node) {
     return registerInt(node->value);
 }
 
-ObjectPointer evaluate_PrimAddNode(Frame *frame, PrimAddNode *node) {
+ObjectPointer evaluate_PrimIntAddNode(Frame *frame, PrimIntAddNode *node) {
     int leftValue = getInt(evaluate(frame, node->left));
     int rightValue = getInt(evaluate(frame, node->right));
     return registerInt(leftValue + rightValue);
@@ -166,8 +166,7 @@ ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *
     Object *rightObject = getObject(frame->objectmemory, evaluate(frame, node->right));
     if ((leftObject->class->classNode->indexedType != BYTE_INDEXED) ||
         (rightObject->class->classNode->indexedType != BYTE_INDEXED)) {
-        fprintf(stderr, "Argument is not bytes.\n");
-        exit(-1);
+        panic("Argument is not bytes.");
     }
     BytesObject *left = (BytesObject *) leftObject;
     BytesObject *right = (BytesObject *) rightObject;
@@ -198,8 +197,8 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
         case INT_NODE:
             return evaluate_IntNode(frame, (IntNode *) node);
-        case PRIM_ADD_NODE:
-            return evaluate_PrimAddNode(frame, (PrimAddNode *) node);
+        case PRIM_INT_ADD_NODE:
+            return evaluate_PrimIntAddNode(frame, (PrimIntAddNode *) node);
         case READ_INST_VAR_NODE:
             return evaluate_ReadInstVarNode(frame, (ReadInstVarNode *) node);
         case UNARY_MESSAGE_NODE:
@@ -252,7 +251,7 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return frame->objectmemory->nilValue;
     }
     const char *typeLabel = NODE_LABELS[node->type];
-    fprintf(stderr, "Invalid type: %S.\n", typeLabel);
+    panic_a("Invalid type", typeLabel);
     exit(-1);
 }
 
@@ -265,7 +264,7 @@ MethodNode *lookupSelector(Class *class, const char *selector) {
     if (class->superClass) {
         return lookupSelector(class->superClass, selector);
     };
-    fprintf(stderr, "Selector not found: #%s\n", selector);
+    panic_a("Selector not found", selector);
     exit(-1);
 }
 
