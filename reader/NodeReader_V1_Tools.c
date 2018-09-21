@@ -20,9 +20,16 @@ char * readString_V1(FILE *fileptr){
     return string;
 }
 
-bool readBool_V1(FILE *fileptr){
-    bool value;
-    if (!fread(&value, sizeof(bool), 1, fileptr) == 1)  readFailed_V1();
+
+ByteArray readByteArray_V1(FILE *fileptr) {
+    ByteArray value;
+    uint16_t size;
+
+    if (!fread(&value.size, sizeof(uint16_t), 1, fileptr) == 1)  readFailed_V1();
+    char * bytes = malloc(size);
+    if (!fread(bytes, 1, size, fileptr) == size)  readFailed_V1();
+    value.size = size;
+    value.elements = bytes;
     return value;
 }
 

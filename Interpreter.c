@@ -46,7 +46,7 @@ ObjectPointer evaluate_PrimEqualsNode(Frame *frame, PrimEqualsNode *node) {
     return getBoolValue(frame->objectmemory, leftValue == rightValue);
 }
 
-ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimSmallerThanNode *node) {
+ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimIntSmallerThanNode *node) {
     int leftValue = getInt(evaluate(frame, node->left));
     int rightValue = getInt(evaluate(frame, node->right));
     return getBoolValue(frame->objectmemory, leftValue < rightValue);
@@ -61,10 +61,7 @@ ObjectPointer evaluate_WriteInstVarNode(Frame *frame, WriteInstVarNode *node) {
 
 ObjectPointer evaluate_SequenceNode(Frame *frame, SequenceNode *node) {
     ObjectPointer result = frame->objectmemory->nilValue;
-    for (int i = 0; i < node->statements.size; i++) {
-        result = evaluate(frame, node->statements.elements[i]);
-    }
-    return result;
+    niy();
 }
 
 ObjectPointer evaluate_PrimNotNode(Frame *frame, PrimNotNode *node) {
@@ -208,8 +205,8 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return frame->objectmemory->falseValue;
         case PRIM_EQUALS_NODE:
             return evaluate_PrimEqualsNode(frame, (PrimEqualsNode *) node);
-        case PRIM_SMALLER_THAN_NODE:
-            return evaluate_PrimSmallerThanNode(frame, (PrimSmallerThanNode *) node);
+        case PRIM_INT_SMALLER_THAN_NODE:
+            return evaluate_PrimSmallerThanNode(frame, (PrimIntSmallerThanNode *) node);
         case WRITE_INST_VAR_NODE:
             return evaluate_WriteInstVarNode(frame, (WriteInstVarNode *) node);
         case SEQUENCE_NODE:

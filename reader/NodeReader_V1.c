@@ -39,25 +39,31 @@ Node *readIntNode_V1(FILE *fileptr) {
 }
 
 Node *readNaryMessageNode_V1(FILE *fileptr) {
-    Node * receiver = (Node *) readNode_V1(fileptr);
-
     const char * selector = readString_V1(fileptr);
+
+    Node * receiver = (Node *) readNode_V1(fileptr);
 
     NodeArray arguments = readNodeArray_V1(fileptr);
 
-    return newNaryMessage(receiver, selector, arguments.elements, arguments.size);
+    return newNaryMessage(selector, receiver, arguments.elements, arguments.size);
 }
 
 Node *readNilNode_V1(FILE *fileptr) {
     return newNil();
 }
 
-Node *readPrimArrayAtNode_V1(FILE *fileptr) {
+Node *readPopNode_V1(FILE *fileptr) {
     Node * value = (Node *) readNode_V1(fileptr);
 
+    return newPop(value);
+}
+
+Node *readPrimArrayAtNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
-    return newPrimArrayAt(value, index);
+    Node * value = (Node *) readNode_V1(fileptr);
+
+    return newPrimArrayAt(index, value);
 }
 
 Node *readPrimEqualsNode_V1(FILE *fileptr) {
@@ -106,6 +112,14 @@ Node *readPrimIntRemNode_V1(FILE *fileptr) {
     return newPrimIntRem(left, right);
 }
 
+Node *readPrimIntSmallerThanNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntSmallerThan(left, right);
+}
+
 Node *readPrimIntSubNode_V1(FILE *fileptr) {
     Node * left = (Node *) readNode_V1(fileptr);
 
@@ -118,14 +132,6 @@ Node *readPrimNotNode_V1(FILE *fileptr) {
     Node * value = (Node *) readNode_V1(fileptr);
 
     return newPrimNot(value);
-}
-
-Node *readPrimSmallerThanNode_V1(FILE *fileptr) {
-    Node * left = (Node *) readNode_V1(fileptr);
-
-    Node * right = (Node *) readNode_V1(fileptr);
-
-    return newPrimSmallerThan(left, right);
 }
 
 Node *readPrimStringConcatNode_V1(FILE *fileptr) {
@@ -177,9 +183,13 @@ Node *readSelfNode_V1(FILE *fileptr) {
 }
 
 Node *readSequenceNode_V1(FILE *fileptr) {
-    NodeArray statements = readNodeArray_V1(fileptr);
+    uint32_t maxStackDepth = readIndex_V1(fileptr);
 
-    return newSequence(statements.elements, statements.size);
+    uint32_t instructionsSize = readIndex_V1(fileptr);
+
+    ByteArray bytecode = readByteArray_V1(fileptr);
+
+    return newSequence(maxStackDepth, instructionsSize, bytecode.elements, bytecode.size);
 }
 
 Node *readStringNode_V1(FILE *fileptr) {
@@ -193,11 +203,11 @@ Node *readTrueNode_V1(FILE *fileptr) {
 }
 
 Node *readUnaryMessageNode_V1(FILE *fileptr) {
-    Node * receiver = (Node *) readNode_V1(fileptr);
-
     const char * selector = readString_V1(fileptr);
 
-    return newUnaryMessage(receiver, selector);
+    Node * receiver = (Node *) readNode_V1(fileptr);
+
+    return newUnaryMessage(selector, receiver);
 }
 
 Node *readWhileTrueNode_V1(FILE *fileptr) {
@@ -291,6 +301,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readNaryMessageNode_V1(fileptr);
         case NIL_NODE:
             return readNilNode_V1(fileptr);
+        case POP_NODE:
+            return readPopNode_V1(fileptr);
         case PRIM_ARRAY_AT_NODE:
             return readPrimArrayAtNode_V1(fileptr);
         case PRIM_EQUALS_NODE:
@@ -305,12 +317,12 @@ Node *readNode_V1(FILE *fileptr) {
             return readPrimIntMulNode_V1(fileptr);
         case PRIM_INT_REM_NODE:
             return readPrimIntRemNode_V1(fileptr);
+        case PRIM_INT_SMALLER_THAN_NODE:
+            return readPrimIntSmallerThanNode_V1(fileptr);
         case PRIM_INT_SUB_NODE:
             return readPrimIntSubNode_V1(fileptr);
         case PRIM_NOT_NODE:
             return readPrimNotNode_V1(fileptr);
-        case PRIM_SMALLER_THAN_NODE:
-            return readPrimSmallerThanNode_V1(fileptr);
         case PRIM_STRING_CONCAT_NODE:
             return readPrimStringConcatNode_V1(fileptr);
         case PRIM_STRING_INTERN_NODE:

@@ -42,11 +42,11 @@ Node *newInt(int value) {
     return (Node *) node;
 }
 
-Node *newNaryMessage(Node * receiver, const char * selector, Node ** arguments, uint32_t arguments_size) {
+Node *newNaryMessage(const char * selector, Node * receiver, Node ** arguments, uint32_t arguments_size) {
     NaryMessageNode *node = (NaryMessageNode *) malloc(sizeof(NaryMessageNode));
     node->super.type = NARY_MESSAGE_NODE;
-    node->receiver = receiver;
     node->selector = selector;
+    node->receiver = receiver;
     node->arguments.elements = arguments;
     node->arguments.size = arguments_size;
     return (Node *) node;
@@ -58,11 +58,18 @@ Node *newNil() {
     return (Node *) node;
 }
 
-Node *newPrimArrayAt(Node * value, uint32_t index) {
+Node *newPop(Node * value) {
+    PopNode *node = (PopNode *) malloc(sizeof(PopNode));
+    node->super.type = POP_NODE;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newPrimArrayAt(uint32_t index, Node * value) {
     PrimArrayAtNode *node = (PrimArrayAtNode *) malloc(sizeof(PrimArrayAtNode));
     node->super.type = PRIM_ARRAY_AT_NODE;
-    node->value = value;
     node->index = index;
+    node->value = value;
     return (Node *) node;
 }
 
@@ -113,6 +120,14 @@ Node *newPrimIntRem(Node * left, Node * right) {
     return (Node *) node;
 }
 
+Node *newPrimIntSmallerThan(Node * left, Node * right) {
+    PrimIntSmallerThanNode *node = (PrimIntSmallerThanNode *) malloc(sizeof(PrimIntSmallerThanNode));
+    node->super.type = PRIM_INT_SMALLER_THAN_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
 Node *newPrimIntSub(Node * left, Node * right) {
     PrimIntSubNode *node = (PrimIntSubNode *) malloc(sizeof(PrimIntSubNode));
     node->super.type = PRIM_INT_SUB_NODE;
@@ -125,14 +140,6 @@ Node *newPrimNot(Node * value) {
     PrimNotNode *node = (PrimNotNode *) malloc(sizeof(PrimNotNode));
     node->super.type = PRIM_NOT_NODE;
     node->value = value;
-    return (Node *) node;
-}
-
-Node *newPrimSmallerThan(Node * left, Node * right) {
-    PrimSmallerThanNode *node = (PrimSmallerThanNode *) malloc(sizeof(PrimSmallerThanNode));
-    node->super.type = PRIM_SMALLER_THAN_NODE;
-    node->left = left;
-    node->right = right;
     return (Node *) node;
 }
 
@@ -192,11 +199,13 @@ Node *newSelf() {
     return (Node *) node;
 }
 
-Node *newSequence(Node ** statements, uint32_t statements_size) {
+Node *newSequence(uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size) {
     SequenceNode *node = (SequenceNode *) malloc(sizeof(SequenceNode));
     node->super.type = SEQUENCE_NODE;
-    node->statements.elements = statements;
-    node->statements.size = statements_size;
+    node->maxStackDepth = maxStackDepth;
+    node->instructionsSize = instructionsSize;
+    node->bytecode.elements = bytecode;
+    node->bytecode.size = bytecode_size;
     return (Node *) node;
 }
 
@@ -213,11 +222,11 @@ Node *newTrue() {
     return (Node *) node;
 }
 
-Node *newUnaryMessage(Node * receiver, const char * selector) {
+Node *newUnaryMessage(const char * selector, Node * receiver) {
     UnaryMessageNode *node = (UnaryMessageNode *) malloc(sizeof(UnaryMessageNode));
     node->super.type = UNARY_MESSAGE_NODE;
-    node->receiver = receiver;
     node->selector = selector;
+    node->receiver = receiver;
     return (Node *) node;
 }
 

@@ -51,7 +51,7 @@ void test_sendmessage() {
 void test_dispatch() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {createMethod("add", newPrimIntAdd(newReadInstVar(0), newReadInstVar(1))),
-                             createMethod("execute", newUnaryMessage(newSelf(), "add"))
+                             createMethod("execute", newUnaryMessage("add", newSelf()))
     };
     Class *class = createClass(om, 2, methods, 2, 0);
 
@@ -67,8 +67,8 @@ void test_dispatchWithArguments() {
     Node *add_args[] = {newReadArg(0), newReadInstVar(1)};
     Node *execute_args[] = {newReadInstVar(0)};
     MethodNode *methods[] = {createMethod("plus", newPrimIntAdd(newReadArg(0), newReadArg(1))),
-                             createMethod("add", newNaryMessage(newSelf(), "plus", add_args, 2)),
-                             createMethod("execute", newNaryMessage(newSelf(), "add", execute_args, 1))};
+                             createMethod("add", newNaryMessage("plus", newSelf(), add_args, 2)),
+                             createMethod("execute", newNaryMessage("add", newSelf(), execute_args, 1))};
     Class *class = createClass(om, 2, methods, 3, 0);
 
     ObjectPointer values[] = {registerInt(3), registerInt(4)};
@@ -205,7 +205,7 @@ void test_false_not() {
 void test_loop() {
     ObjectMemory *om = createObjectMemory();
     Node *stmts[] = {
-            newWhileTrue(newPrimSmallerThan(newReadInstVar(0), newInt(42)),
+            newWhileTrue(newPrimIntSmallerThan(newReadInstVar(0), newInt(42)),
                          newWriteInstVar(0, newPrimIntAdd(newReadInstVar(0), newInt(5)))),
             newReadInstVar(0)};
     MethodNode *methods[] = {createMethod("execute", newSequence(stmts, 2))};
@@ -246,7 +246,7 @@ void test_array_construction() {
 void test_array_construction_last() {
     ObjectMemory *om = createObjectMemory();
     Node *elements[] = {newInt(1), newInt(7), newInt(29)};
-    MethodNode *methods[] = {createMethod("execute", newPrimArrayAt(newArrayConstruction(elements, 3), 2))};
+    MethodNode *methods[] = {createMethod("execute", newPrimArrayAt(2, newArrayConstruction(elements, 3)))};
     Class *class = createClass(om, 0, methods, 1, false);
     ObjectPointer values[] = {registerInt(0)};
 
@@ -305,7 +305,7 @@ void test_read_method_node() {
 void test_true_isNil() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newUnaryMessage(newTrue(), "isNil"))};
+            createMethod("execute", newUnaryMessage("isNil", newTrue()))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -316,7 +316,7 @@ void test_true_isNil() {
 void test_nil_isNil() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newUnaryMessage(newNil(), "isNil"))};
+            createMethod("execute", newUnaryMessage("isNil", newNil()))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);

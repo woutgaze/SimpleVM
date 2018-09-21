@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 
-static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNode", "UnaryMessageNode", "NaryMessageNode", "SelfNode", "ReadArgNode", "ReturnNode", "ConditionalNode", "WhileTrueNode", "FalseNode", "PrimEqualsNode", "PrimSmallerThanNode", "WriteInstVarNode", "SequenceNode", "PrimNotNode", "ArrayConstructionNode", "ReadIndexedNode", "WriteIndexedNode", "PrimGetArraySizeNode", "PrimArrayAtNode", "StringNode", "ArgumentNode", "MethodNode", "BlockNode", "ReadTempNode", "WriteTempNode", "ClassSideNode", "ClassNode", "PrimStringConcatNode", "PrimStringInternNode", "NilNode", "PrimIntDivNode", "PrimIntMulNode", "PrimIntRemNode", "PrimIntSubNode", "TrueNode", "UNDEFINED_37", "UNDEFINED_38", "UNDEFINED_39", "UNDEFINED_40", "UNDEFINED_41", "UNDEFINED_42", "UNDEFINED_43", "UNDEFINED_44", "UNDEFINED_45", "UNDEFINED_46", "UNDEFINED_47", "UNDEFINED_48", "UNDEFINED_49", "UNDEFINED_50", "UNDEFINED_51", "UNDEFINED_52", "UNDEFINED_53", "UNDEFINED_54", "UNDEFINED_55", "UNDEFINED_56", "UNDEFINED_57", "UNDEFINED_58", "UNDEFINED_59", "UNDEFINED_60", "UNDEFINED_61", "UNDEFINED_62", "UNDEFINED_63", "UNDEFINED_64", "UNDEFINED_65", "UNDEFINED_66", "UNDEFINED_67", "UNDEFINED_68", "UNDEFINED_69", "UNDEFINED_70", "UNDEFINED_71", "UNDEFINED_72", "UNDEFINED_73", "UNDEFINED_74", "UNDEFINED_75", "UNDEFINED_76", "UNDEFINED_77", "UNDEFINED_78", "UNDEFINED_79", "UNDEFINED_80", "UNDEFINED_81", "UNDEFINED_82", "UNDEFINED_83", "UNDEFINED_84", "UNDEFINED_85", "UNDEFINED_86", "UNDEFINED_87", "UNDEFINED_88", "UNDEFINED_89", "UNDEFINED_90", "UNDEFINED_91", "UNDEFINED_92", "UNDEFINED_93", "UNDEFINED_94", "UNDEFINED_95", "UNDEFINED_96", "UNDEFINED_97", "UNDEFINED_98", "UNDEFINED_99", "UNDEFINED_100", "UNDEFINED_101", "UNDEFINED_102", "UNDEFINED_103", "UNDEFINED_104", "UNDEFINED_105", "UNDEFINED_106", "UNDEFINED_107", "UNDEFINED_108", "UNDEFINED_109", "UNDEFINED_110", "UNDEFINED_111", "UNDEFINED_112", "UNDEFINED_113", "UNDEFINED_114", "UNDEFINED_115", "UNDEFINED_116", "UNDEFINED_117", "UNDEFINED_118", "UNDEFINED_119", "UNDEFINED_120", "UNDEFINED_121", "UNDEFINED_122", "UNDEFINED_123", "UNDEFINED_124", "UNDEFINED_125", "UNDEFINED_126", "UNDEFINED_127", "UNDEFINED_128", "UNDEFINED_129", "UNDEFINED_130", "UNDEFINED_131", "UNDEFINED_132", "UNDEFINED_133", "UNDEFINED_134", "UNDEFINED_135", "UNDEFINED_136", "UNDEFINED_137", "UNDEFINED_138", "UNDEFINED_139", "UNDEFINED_140", "UNDEFINED_141", "UNDEFINED_142", "UNDEFINED_143", "UNDEFINED_144", "UNDEFINED_145", "UNDEFINED_146", "UNDEFINED_147", "UNDEFINED_148", "UNDEFINED_149", "UNDEFINED_150", "UNDEFINED_151", "UNDEFINED_152", "UNDEFINED_153", "UNDEFINED_154", "UNDEFINED_155", "UNDEFINED_156", "UNDEFINED_157", "UNDEFINED_158", "UNDEFINED_159", "UNDEFINED_160", "UNDEFINED_161", "UNDEFINED_162", "UNDEFINED_163", "UNDEFINED_164", "UNDEFINED_165", "UNDEFINED_166", "UNDEFINED_167", "UNDEFINED_168", "UNDEFINED_169", "UNDEFINED_170", "UNDEFINED_171", "UNDEFINED_172", "UNDEFINED_173", "UNDEFINED_174", "UNDEFINED_175", "UNDEFINED_176", "UNDEFINED_177", "UNDEFINED_178", "UNDEFINED_179", "UNDEFINED_180", "UNDEFINED_181", "UNDEFINED_182", "UNDEFINED_183", "UNDEFINED_184", "UNDEFINED_185", "UNDEFINED_186", "UNDEFINED_187", "UNDEFINED_188", "UNDEFINED_189", "UNDEFINED_190", "UNDEFINED_191", "UNDEFINED_192", "UNDEFINED_193", "UNDEFINED_194", "UNDEFINED_195", "UNDEFINED_196", "UNDEFINED_197", "UNDEFINED_198", "UNDEFINED_199", "UNDEFINED_200", "UNDEFINED_201", "UNDEFINED_202", "UNDEFINED_203", "UNDEFINED_204", "UNDEFINED_205", "UNDEFINED_206", "UNDEFINED_207", "UNDEFINED_208", "UNDEFINED_209", "UNDEFINED_210", "UNDEFINED_211", "UNDEFINED_212", "UNDEFINED_213", "UNDEFINED_214", "UNDEFINED_215", "UNDEFINED_216", "UNDEFINED_217", "UNDEFINED_218", "UNDEFINED_219", "UNDEFINED_220", "UNDEFINED_221", "UNDEFINED_222", "UNDEFINED_223", "UNDEFINED_224", "UNDEFINED_225", "UNDEFINED_226", "UNDEFINED_227", "UNDEFINED_228", "UNDEFINED_229", "UNDEFINED_230", "UNDEFINED_231", "UNDEFINED_232", "UNDEFINED_233", "UNDEFINED_234", "UNDEFINED_235", "UNDEFINED_236", "UNDEFINED_237", "UNDEFINED_238", "UNDEFINED_239", "UNDEFINED_240", "UNDEFINED_241", "UNDEFINED_242", "UNDEFINED_243", "UNDEFINED_244", "UNDEFINED_245", "UNDEFINED_246", "UNDEFINED_247", "UNDEFINED_248", "UNDEFINED_249", "UNDEFINED_250", "UNDEFINED_251", "UNDEFINED_252", "UNDEFINED_253", "UNDEFINED_254"};
+static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNode", "UnaryMessageNode", "NaryMessageNode", "SelfNode", "ReadArgNode", "ReturnNode", "ConditionalNode", "WhileTrueNode", "FalseNode", "PrimEqualsNode", "PrimIntSmallerThanNode", "WriteInstVarNode", "SequenceNode", "PrimNotNode", "ArrayConstructionNode", "ReadIndexedNode", "WriteIndexedNode", "PrimGetArraySizeNode", "PrimArrayAtNode", "StringNode", "ArgumentNode", "MethodNode", "BlockNode", "ReadTempNode", "WriteTempNode", "ClassSideNode", "ClassNode", "PrimStringConcatNode", "PrimStringInternNode", "NilNode", "PrimIntDivNode", "PrimIntMulNode", "PrimIntRemNode", "PrimIntSubNode", "TrueNode", "PopNode", "UNDEFINED_38", "UNDEFINED_39", "UNDEFINED_40", "UNDEFINED_41", "UNDEFINED_42", "UNDEFINED_43", "UNDEFINED_44", "UNDEFINED_45", "UNDEFINED_46", "UNDEFINED_47", "UNDEFINED_48", "UNDEFINED_49", "UNDEFINED_50", "UNDEFINED_51", "UNDEFINED_52", "UNDEFINED_53", "UNDEFINED_54", "UNDEFINED_55", "UNDEFINED_56", "UNDEFINED_57", "UNDEFINED_58", "UNDEFINED_59", "UNDEFINED_60", "UNDEFINED_61", "UNDEFINED_62", "UNDEFINED_63", "UNDEFINED_64", "UNDEFINED_65", "UNDEFINED_66", "UNDEFINED_67", "UNDEFINED_68", "UNDEFINED_69", "UNDEFINED_70", "UNDEFINED_71", "UNDEFINED_72", "UNDEFINED_73", "UNDEFINED_74", "UNDEFINED_75", "UNDEFINED_76", "UNDEFINED_77", "UNDEFINED_78", "UNDEFINED_79", "UNDEFINED_80", "UNDEFINED_81", "UNDEFINED_82", "UNDEFINED_83", "UNDEFINED_84", "UNDEFINED_85", "UNDEFINED_86", "UNDEFINED_87", "UNDEFINED_88", "UNDEFINED_89", "UNDEFINED_90", "UNDEFINED_91", "UNDEFINED_92", "UNDEFINED_93", "UNDEFINED_94", "UNDEFINED_95", "UNDEFINED_96", "UNDEFINED_97", "UNDEFINED_98", "UNDEFINED_99", "UNDEFINED_100", "UNDEFINED_101", "UNDEFINED_102", "UNDEFINED_103", "UNDEFINED_104", "UNDEFINED_105", "UNDEFINED_106", "UNDEFINED_107", "UNDEFINED_108", "UNDEFINED_109", "UNDEFINED_110", "UNDEFINED_111", "UNDEFINED_112", "UNDEFINED_113", "UNDEFINED_114", "UNDEFINED_115", "UNDEFINED_116", "UNDEFINED_117", "UNDEFINED_118", "UNDEFINED_119", "UNDEFINED_120", "UNDEFINED_121", "UNDEFINED_122", "UNDEFINED_123", "UNDEFINED_124", "UNDEFINED_125", "UNDEFINED_126", "UNDEFINED_127", "UNDEFINED_128", "UNDEFINED_129", "UNDEFINED_130", "UNDEFINED_131", "UNDEFINED_132", "UNDEFINED_133", "UNDEFINED_134", "UNDEFINED_135", "UNDEFINED_136", "UNDEFINED_137", "UNDEFINED_138", "UNDEFINED_139", "UNDEFINED_140", "UNDEFINED_141", "UNDEFINED_142", "UNDEFINED_143", "UNDEFINED_144", "UNDEFINED_145", "UNDEFINED_146", "UNDEFINED_147", "UNDEFINED_148", "UNDEFINED_149", "UNDEFINED_150", "UNDEFINED_151", "UNDEFINED_152", "UNDEFINED_153", "UNDEFINED_154", "UNDEFINED_155", "UNDEFINED_156", "UNDEFINED_157", "UNDEFINED_158", "UNDEFINED_159", "UNDEFINED_160", "UNDEFINED_161", "UNDEFINED_162", "UNDEFINED_163", "UNDEFINED_164", "UNDEFINED_165", "UNDEFINED_166", "UNDEFINED_167", "UNDEFINED_168", "UNDEFINED_169", "UNDEFINED_170", "UNDEFINED_171", "UNDEFINED_172", "UNDEFINED_173", "UNDEFINED_174", "UNDEFINED_175", "UNDEFINED_176", "UNDEFINED_177", "UNDEFINED_178", "UNDEFINED_179", "UNDEFINED_180", "UNDEFINED_181", "UNDEFINED_182", "UNDEFINED_183", "UNDEFINED_184", "UNDEFINED_185", "UNDEFINED_186", "UNDEFINED_187", "UNDEFINED_188", "UNDEFINED_189", "UNDEFINED_190", "UNDEFINED_191", "UNDEFINED_192", "UNDEFINED_193", "UNDEFINED_194", "UNDEFINED_195", "UNDEFINED_196", "UNDEFINED_197", "UNDEFINED_198", "UNDEFINED_199", "UNDEFINED_200", "UNDEFINED_201", "UNDEFINED_202", "UNDEFINED_203", "UNDEFINED_204", "UNDEFINED_205", "UNDEFINED_206", "UNDEFINED_207", "UNDEFINED_208", "UNDEFINED_209", "UNDEFINED_210", "UNDEFINED_211", "UNDEFINED_212", "UNDEFINED_213", "UNDEFINED_214", "UNDEFINED_215", "UNDEFINED_216", "UNDEFINED_217", "UNDEFINED_218", "UNDEFINED_219", "UNDEFINED_220", "UNDEFINED_221", "UNDEFINED_222", "UNDEFINED_223", "UNDEFINED_224", "UNDEFINED_225", "UNDEFINED_226", "UNDEFINED_227", "UNDEFINED_228", "UNDEFINED_229", "UNDEFINED_230", "UNDEFINED_231", "UNDEFINED_232", "UNDEFINED_233", "UNDEFINED_234", "UNDEFINED_235", "UNDEFINED_236", "UNDEFINED_237", "UNDEFINED_238", "UNDEFINED_239", "UNDEFINED_240", "UNDEFINED_241", "UNDEFINED_242", "UNDEFINED_243", "UNDEFINED_244", "UNDEFINED_245", "UNDEFINED_246", "UNDEFINED_247", "UNDEFINED_248", "UNDEFINED_249", "UNDEFINED_250", "UNDEFINED_251", "UNDEFINED_252", "UNDEFINED_253", "UNDEFINED_254"};
 
 #define ARGUMENT_NODE 22
 #define ARRAY_CONSTRUCTION_NODE 16
@@ -16,6 +16,7 @@ static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNo
 #define INT_NODE 0
 #define NARY_MESSAGE_NODE 4
 #define NIL_NODE 31
+#define POP_NODE 37
 #define PRIM_ARRAY_AT_NODE 20
 #define PRIM_EQUALS_NODE 11
 #define PRIM_GET_ARRAY_SIZE_NODE 19
@@ -23,9 +24,9 @@ static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNo
 #define PRIM_INT_DIV_NODE 32
 #define PRIM_INT_MUL_NODE 33
 #define PRIM_INT_REM_NODE 34
+#define PRIM_INT_SMALLER_THAN_NODE 12
 #define PRIM_INT_SUB_NODE 35
 #define PRIM_NOT_NODE 15
-#define PRIM_SMALLER_THAN_NODE 12
 #define PRIM_STRING_CONCAT_NODE 29
 #define PRIM_STRING_INTERN_NODE 30
 #define READ_ARG_NODE 6
@@ -66,6 +67,8 @@ typedef struct NaryMessageNode NaryMessageNode;
 
 typedef struct NilNode NilNode;
 
+typedef struct PopNode PopNode;
+
 typedef struct PrimArrayAtNode PrimArrayAtNode;
 
 typedef struct PrimEqualsNode PrimEqualsNode;
@@ -80,11 +83,11 @@ typedef struct PrimIntMulNode PrimIntMulNode;
 
 typedef struct PrimIntRemNode PrimIntRemNode;
 
+typedef struct PrimIntSmallerThanNode PrimIntSmallerThanNode;
+
 typedef struct PrimIntSubNode PrimIntSubNode;
 
 typedef struct PrimNotNode PrimNotNode;
-
-typedef struct PrimSmallerThanNode PrimSmallerThanNode;
 
 typedef struct PrimStringConcatNode PrimStringConcatNode;
 
@@ -131,6 +134,11 @@ typedef struct ArgumentNodeArray {
 	ArgumentNode ** elements;
 } ArgumentNodeArray;
 
+typedef struct ByteArray {
+	uint32_t size;
+	char* elements;
+} ByteArray;
+
 typedef struct MethodNodeArray {
 	uint32_t size;
 	MethodNode ** elements;
@@ -169,8 +177,8 @@ struct IntNode {
 
 struct NaryMessageNode {
 	Node super;
-	Node * receiver;
 	const char * selector;
+	Node * receiver;
 	NodeArray arguments;
 };
 
@@ -178,10 +186,15 @@ struct NilNode {
 	Node super;
 };
 
-struct PrimArrayAtNode {
+struct PopNode {
 	Node super;
 	Node * value;
+};
+
+struct PrimArrayAtNode {
+	Node super;
 	uint32_t index;
+	Node * value;
 };
 
 struct PrimEqualsNode {
@@ -219,6 +232,12 @@ struct PrimIntRemNode {
 	Node * right;
 };
 
+struct PrimIntSmallerThanNode {
+	Node super;
+	Node * left;
+	Node * right;
+};
+
 struct PrimIntSubNode {
 	Node super;
 	Node * left;
@@ -228,12 +247,6 @@ struct PrimIntSubNode {
 struct PrimNotNode {
 	Node super;
 	Node * value;
-};
-
-struct PrimSmallerThanNode {
-	Node super;
-	Node * left;
-	Node * right;
 };
 
 struct PrimStringConcatNode {
@@ -278,7 +291,9 @@ struct SelfNode {
 
 struct SequenceNode {
 	Node super;
-	NodeArray statements;
+	uint32_t maxStackDepth;
+	uint32_t instructionsSize;
+	ByteArray bytecode;
 };
 
 struct StringNode {
@@ -292,8 +307,8 @@ struct TrueNode {
 
 struct UnaryMessageNode {
 	Node super;
-	Node * receiver;
 	const char * selector;
+	Node * receiver;
 };
 
 struct WhileTrueNode {
@@ -358,11 +373,13 @@ Node *newFalse();
 
 Node *newInt(int value);
 
-Node *newNaryMessage(Node * receiver, const char * selector, Node ** arguments, uint32_t arguments_size);
+Node *newNaryMessage(const char * selector, Node * receiver, Node ** arguments, uint32_t arguments_size);
 
 Node *newNil();
 
-Node *newPrimArrayAt(Node * value, uint32_t index);
+Node *newPop(Node * value);
+
+Node *newPrimArrayAt(uint32_t index, Node * value);
 
 Node *newPrimEquals(Node * left, Node * right);
 
@@ -376,11 +393,11 @@ Node *newPrimIntMul(Node * left, Node * right);
 
 Node *newPrimIntRem(Node * left, Node * right);
 
+Node *newPrimIntSmallerThan(Node * left, Node * right);
+
 Node *newPrimIntSub(Node * left, Node * right);
 
 Node *newPrimNot(Node * value);
-
-Node *newPrimSmallerThan(Node * left, Node * right);
 
 Node *newPrimStringConcat(Node * left, Node * right);
 
@@ -398,13 +415,13 @@ Node *newReturn(Node * value);
 
 Node *newSelf();
 
-Node *newSequence(Node ** statements, uint32_t statements_size);
+Node *newSequence(uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size);
 
 Node *newString(const char * value);
 
 Node *newTrue();
 
-Node *newUnaryMessage(Node * receiver, const char * selector);
+Node *newUnaryMessage(const char * selector, Node * receiver);
 
 Node *newWhileTrue(Node * condition, Node * body);
 
