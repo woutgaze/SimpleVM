@@ -5,9 +5,9 @@
 #ifndef SIMPLEVM_DEVTOOLS_H
 #define SIMPLEVM_DEVTOOLS_H
 
-void panic(char *message);
+void panic(const char *message);
 
-void panic_a(char *message, char *argument);
+void panic_a(const char *message, const char *argument);
 
 void niy();
 

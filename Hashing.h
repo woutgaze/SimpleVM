@@ -7,5 +7,5 @@
 #include <stdint.h>
 #include <stddef.h>
 
-uint32_t string_hash(unsigned char *str, size_t size);
+uint32_t string_hash(const char *str, size_t size);
 #endif //SIMPLEVM_STRINGTOOLS_H

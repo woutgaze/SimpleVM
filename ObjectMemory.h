@@ -75,6 +75,8 @@ int getInt(ObjectPointer p);
 bool getBool(ObjectMemory *om, ObjectPointer p);
 char * getCString(ObjectMemory *om, ObjectPointer p);
 
+ObjectPointer getBoolValue(ObjectMemory *om, bool test);
+
 ObjectPointer getInstVar(Object *obj, int instVarIndex);
 
 void setInstVar(Object *obj, int instVarIndex, ObjectPointer a);

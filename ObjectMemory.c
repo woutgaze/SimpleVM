@@ -42,7 +42,7 @@ ObjectPointer registerObjectWithTableIndex(ObjectMemory *om, Object *obj, size_t
     size_t entries_index = registerObjectInTable(&om->objectTables[tables_index], obj);
 
     size_t result = (entries_index << OBJECT_TABLES_BITS) | tables_index;
-    return (ObjectPointer *) result;
+    return (ObjectPointer) result;
 }
 
 ObjectPointer registerObjectWithHash(ObjectMemory *om, Object *obj, size_t hash) {
@@ -59,10 +59,14 @@ ObjectPointer findObjectMatching(ObjectMemory *om, BytesObject *bytes, size_t si
     size_t tables_index = hash & OBJECT_TABLES_MASK;
     ObjectTable table = om->objectTables[tables_index];
     for (size_t i = 0; i < table.used; i++) {
-        BytesObject *obj = table.entries[i].object;
+        BytesObject *obj = (BytesObject *) table.entries[i].object;
         if (!memcmp(obj, bytes, size)) return (i << OBJECT_TABLES_BITS) | tables_index;
     }
     return 0;
+}
+
+ObjectPointer getBoolValue(ObjectMemory *om, bool test) {
+    return test ? om->trueValue : om->falseValue;
 }
 
 
@@ -192,7 +196,7 @@ Class *findClass(ObjectMemory *om, const char *name) {
 }
 
 void registerClass(ObjectMemory *om, Class *class) {
-    registerObject(om, (Object *)class);
+    registerObject(om, (Object *) class);
     registerObjectInTable(&om->classTable, (Object *) class);
     class->superClass = findClass(om, class->classNode->superName);
 }
@@ -204,7 +208,8 @@ Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode) {
 }
 
 Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType) {
-    ArgumentNode *instVars[] = {(ArgumentNode *) newArgument("t1"), (ArgumentNode *) newArgument("t2"), (ArgumentNode *) newArgument("t3")};
+    ArgumentNode *instVars[] = {(ArgumentNode *) newArgument("t1"), (ArgumentNode *) newArgument("t2"),
+                                (ArgumentNode *) newArgument("t3")};
     ClassSideNode *instSide = (ClassSideNode *) newClassSide(instVars, instVarSize, methods, methodsSize);
     ClassSideNode *classSide = (ClassSideNode *) newClassSide(NULL, 0, NULL, 0);
     ClassNode *classNode = (ClassNode *) newClass("Test", "", indexingType, instSide, classSide);
@@ -242,20 +247,18 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
 }
 
 ClassNode *newUndefinedObjectClass() {
-    char bytes[] = {83, 86, 1, 28, 15, 0, 85, 110, 100, 101, 102, 105, 110, 101, 100, 79, 98, 106, 101, 99, 116, 6, 0,
-                    79, 98, 106, 101, 99, 116, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0,
-                    14, 1, 0, 7, 10, 1, 27, 0, 0, 0, 0};
+    char bytes[] = { 83, 86, 1, 28, 15, 0, 85, 110, 100, 101, 102, 105, 110, 101, 100, 79, 98, 106, 101, 99, 116, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 7, 36, 27, 0, 0, 0, 0 };
     return (ClassNode *) readNodeFromBytes(bytes);
 }
 
 ClassNode *newObjectClass() {
-    char bytes[] = {83, 86, 1, 28, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78,
-                    105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 7, 10, 0, 27, 0, 0, 0, 0};
+    char bytes[] = { 83, 86, 1, 28, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 7, 10, 27, 0, 0, 0, 0 };
     return (ClassNode *) readNodeFromBytes(bytes);
 }
 
-ClassNode *newEmptyClass(const char * name, const char * superName,  uint32_t indexedType) {
-    return (ClassNode *) newClass(name, superName, indexedType, newClassSide(NULL, 0, NULL, 0), newClassSide(NULL, 0, NULL, 0));
+ClassNode *newEmptyClass(const char *name, const char *superName, uint32_t indexedType) {
+    return (ClassNode *) newClass(name, superName, indexedType, (ClassSideNode *) newClassSide(NULL, 0, NULL, 0),
+                                  (ClassSideNode *) newClassSide(NULL, 0, NULL, 0));
 }
 
 ObjectMemory *createObjectMemory() {

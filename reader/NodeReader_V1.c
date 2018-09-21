@@ -18,12 +18,6 @@ Node *readArrayConstructionNode_V1(FILE *fileptr) {
     return newArrayConstruction(elements.elements, elements.size);
 }
 
-Node *readBoolNode_V1(FILE *fileptr) {
-    bool value = readBool_V1(fileptr);
-
-    return newBool(value);
-}
-
 Node *readConditionalNode_V1(FILE *fileptr) {
     Node * condition = (Node *) readNode_V1(fileptr);
 
@@ -32,6 +26,10 @@ Node *readConditionalNode_V1(FILE *fileptr) {
     Node * falseBranch = (Node *) readNode_V1(fileptr);
 
     return newConditional(condition, trueBranch, falseBranch);
+}
+
+Node *readFalseNode_V1(FILE *fileptr) {
+    return newFalse();
 }
 
 Node *readIntNode_V1(FILE *fileptr) {
@@ -190,6 +188,10 @@ Node *readStringNode_V1(FILE *fileptr) {
     return newString(value);
 }
 
+Node *readTrueNode_V1(FILE *fileptr) {
+    return newTrue();
+}
+
 Node *readUnaryMessageNode_V1(FILE *fileptr) {
     Node * receiver = (Node *) readNode_V1(fileptr);
 
@@ -279,10 +281,10 @@ Node *readNode_V1(FILE *fileptr) {
             return readArgumentNode_V1(fileptr);
         case ARRAY_CONSTRUCTION_NODE:
             return readArrayConstructionNode_V1(fileptr);
-        case BOOL_NODE:
-            return readBoolNode_V1(fileptr);
         case CONDITIONAL_NODE:
             return readConditionalNode_V1(fileptr);
+        case FALSE_NODE:
+            return readFalseNode_V1(fileptr);
         case INT_NODE:
             return readIntNode_V1(fileptr);
         case NARY_MESSAGE_NODE:
@@ -329,6 +331,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readSequenceNode_V1(fileptr);
         case STRING_NODE:
             return readStringNode_V1(fileptr);
+        case TRUE_NODE:
+            return readTrueNode_V1(fileptr);
         case UNARY_MESSAGE_NODE:
             return readUnaryMessageNode_V1(fileptr);
         case WHILE_TRUE_NODE:

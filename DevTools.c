@@ -5,11 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void panic(char *message) {
+void panic(const char *message) {
     panic_a(message, NULL);
 }
 
-void panic_a(char *message, char *argument) {
+void panic_a(const char *message, const char *argument) {
     fflush(stdout);
     if (argument == NULL) {
         fprintf(stderr, "PANIC: %s \n", message);

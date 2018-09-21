@@ -20,19 +20,18 @@ Node *newArrayConstruction(Node ** elements, uint32_t elements_size) {
     return (Node *) node;
 }
 
-Node *newBool(bool value) {
-    BoolNode *node = (BoolNode *) malloc(sizeof(BoolNode));
-    node->super.type = BOOL_NODE;
-    node->value = value;
-    return (Node *) node;
-}
-
 Node *newConditional(Node * condition, Node * trueBranch, Node * falseBranch) {
     ConditionalNode *node = (ConditionalNode *) malloc(sizeof(ConditionalNode));
     node->super.type = CONDITIONAL_NODE;
     node->condition = condition;
     node->trueBranch = trueBranch;
     node->falseBranch = falseBranch;
+    return (Node *) node;
+}
+
+Node *newFalse() {
+    FalseNode *node = (FalseNode *) malloc(sizeof(FalseNode));
+    node->super.type = FALSE_NODE;
     return (Node *) node;
 }
 
@@ -205,6 +204,12 @@ Node *newString(const char * value) {
     StringNode *node = (StringNode *) malloc(sizeof(StringNode));
     node->super.type = STRING_NODE;
     node->value = value;
+    return (Node *) node;
+}
+
+Node *newTrue() {
+    TrueNode *node = (TrueNode *) malloc(sizeof(TrueNode));
+    node->super.type = TRUE_NODE;
     return (Node *) node;
 }
 

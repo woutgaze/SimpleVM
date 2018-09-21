@@ -93,7 +93,7 @@ void test_int() {
 void test_true() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newBool(true))};
+            createMethod("execute", newTrue())};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -105,7 +105,7 @@ void test_true() {
 void test_false() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newBool(false))};
+            createMethod("execute", newFalse())};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -117,7 +117,7 @@ void test_false() {
 void test_conditional_true() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newConditional(newBool(true), newInt(3), newInt(4)))};
+            createMethod("execute", newConditional(newTrue(), newInt(3), newInt(4)))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -129,7 +129,7 @@ void test_conditional_true() {
 void test_conditional_false() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newConditional(newBool(false), newInt(3), newInt(4)))};
+            createMethod("execute", newConditional(newFalse(), newInt(3), newInt(4)))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -183,7 +183,7 @@ void test_op_zero_is_nil() {
 void test_true_not() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newPrimNot(newBool(true)))};
+            createMethod("execute", newPrimNot(newTrue()))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -194,7 +194,7 @@ void test_true_not() {
 void test_false_not() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newPrimNot(newBool(false)))};
+            createMethod("execute", newPrimNot(newFalse()))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);
@@ -305,7 +305,7 @@ void test_read_method_node() {
 void test_true_isNil() {
     ObjectMemory *om = createObjectMemory();
     MethodNode *methods[] = {
-            createMethod("execute", newUnaryMessage(newBool(true), "isNil"))};
+            createMethod("execute", newUnaryMessage(newTrue(), "isNil"))};
     Class *class = createClass(om, 0, methods, 1, 0);
 
     ObjectPointer op = createObject(om, class, NULL, 0);

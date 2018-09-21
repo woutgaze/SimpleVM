@@ -6,8 +6,8 @@
 #define SIMPLEVM_ASSERTING_H
 #include <stdbool.h>
 
-void assertTrue(const char *description, bool value);
-void assertFalse(const char *description, bool value);
+void assertTrue(char *description, bool value);
+void assertFalse(char *description, bool value);
 void assertEquals(int a, int b);
 
 #endif //SIMPLEVM_ASSERTING_H

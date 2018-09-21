@@ -8,24 +8,13 @@
 
 ObjectPointer evaluate(Frame *frame, Node *node);
 
-ObjectPointer evaluate_IntNode(Frame *frame, IntNode *node) {
-    return registerInt(node->value);
-}
-
-ObjectPointer evaluate_PrimIntAddNode(Frame *frame, PrimIntAddNode *node) {
-    int leftValue = getInt(evaluate(frame, node->left));
-    int rightValue = getInt(evaluate(frame, node->right));
+ObjectPointer primIntAdd(ObjectPointer left, ObjectPointer right) {
+    int leftValue = getInt(left);
+    int rightValue = getInt(right);
     return registerInt(leftValue + rightValue);
 }
 
-ObjectPointer evaluate_ReadInstVarNode(Frame *frame, ReadInstVarNode *node) {
-    return getInstVar(frame->self, node->index);
-}
-
-ObjectPointer evaluate_UnaryMessageNode(Frame *frame, UnaryMessageNode *node) {
-    ObjectPointer receiver = evaluate(frame, node->receiver);
-    return perform(frame->objectmemory, receiver, node->selector, NULL);
-}
+ObjectPointer sendUnaryMessage(const Frame *frame, ObjectPointer receiver, const char *selector) { return perform(frame->objectmemory, receiver, selector, NULL); }
 
 ObjectPointer evaluate_NaryMessageNode(Frame *frame, NaryMessageNode *node) {
     ObjectPointer receiver = evaluate(frame, node->receiver);
@@ -51,20 +40,16 @@ ObjectPointer evaluate_ConditionalNode(Frame *frame, ConditionalNode *node) {
     }
 }
 
-ObjectPointer evaluate_BoolNode(Frame *frame, BoolNode *node) {
-    return node->value ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
-}
-
 ObjectPointer evaluate_PrimEqualsNode(Frame *frame, PrimEqualsNode *node) {
     ObjectPointer leftValue = evaluate(frame, node->left);
     ObjectPointer rightValue = evaluate(frame, node->right);
-    return leftValue == rightValue ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
+    return getBoolValue(frame->objectmemory, leftValue == rightValue);
 }
 
 ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimSmallerThanNode *node) {
     int leftValue = getInt(evaluate(frame, node->left));
     int rightValue = getInt(evaluate(frame, node->right));
-    return leftValue < rightValue ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
+    return getBoolValue(frame->objectmemory, leftValue < rightValue);
 }
 
 
@@ -84,7 +69,7 @@ ObjectPointer evaluate_SequenceNode(Frame *frame, SequenceNode *node) {
 
 ObjectPointer evaluate_PrimNotNode(Frame *frame, PrimNotNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
-    return !getBool(frame->objectmemory, value) ? frame->objectmemory->trueValue : frame->objectmemory->falseValue;
+    return getBoolValue(frame->objectmemory, !getBool(frame->objectmemory, value));
 }
 
 ObjectPointer evaluate_WhileTrueNode(Frame *frame, WhileTrueNode *node) {
@@ -143,7 +128,7 @@ ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
         free(obj);
         return current;
     }
-    return registerObjectWithHash(frame->objectmemory, obj, hash);
+    return registerObjectWithHash(frame->objectmemory, (Object *) obj, hash);
 }
 
 ObjectPointer evaluate_WriteTempNode(Frame *frame, WriteTempNode *node) {
@@ -182,7 +167,7 @@ ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *
     char *dest2 = dest + left->size;
     memcpy(dest2, srcRight, right->size);
     uint32_t hash = string_hash(result->bytes, result->size);
-    return registerObjectWithHash(frame->objectmemory, result, hash);
+    return registerObjectWithHash(frame->objectmemory, (Object *) result, hash);
 }
 
 ObjectPointer evaluate_PrimStringInternNode(Frame *frame, PrimStringInternNode *node) {
@@ -195,14 +180,18 @@ ObjectPointer evaluate_PrimStringInternNode(Frame *frame, PrimStringInternNode *
 
 ObjectPointer evaluate(Frame *frame, Node *node) {
     switch (node->type) {
-        case INT_NODE:
-            return evaluate_IntNode(frame, (IntNode *) node);
-        case PRIM_INT_ADD_NODE:
-            return evaluate_PrimIntAddNode(frame, (PrimIntAddNode *) node);
-        case READ_INST_VAR_NODE:
-            return evaluate_ReadInstVarNode(frame, (ReadInstVarNode *) node);
-        case UNARY_MESSAGE_NODE:
-            return evaluate_UnaryMessageNode(frame, (UnaryMessageNode *) node);
+        case INT_NODE: {
+            return registerInt(((IntNode *) node)->value);
+        }
+        case PRIM_INT_ADD_NODE: {
+            return primIntAdd(evaluate(frame, ((PrimIntAddNode *) node)->left), evaluate(frame, ((PrimIntAddNode *) node)->right));
+        }
+        case READ_INST_VAR_NODE: {
+            return getInstVar(frame->self, ((ReadInstVarNode *) node)->index);
+        }
+        case UNARY_MESSAGE_NODE: {
+            return sendUnaryMessage(frame, evaluate(frame, ((UnaryMessageNode *) node)->receiver), ((UnaryMessageNode *) node)->selector);
+        }
         case NARY_MESSAGE_NODE:
             return evaluate_NaryMessageNode(frame, (NaryMessageNode *) node);
         case SELF_NODE:
@@ -213,8 +202,10 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
             return evaluate_ConditionalNode(frame, (ConditionalNode *) node);
         case WHILE_TRUE_NODE:
             return evaluate_WhileTrueNode(frame, (WhileTrueNode *) node);
-        case BOOL_NODE:
-            return evaluate_BoolNode(frame, (BoolNode *) node);
+        case TRUE_NODE:
+            return frame->objectmemory->trueValue;
+        case FALSE_NODE:
+            return frame->objectmemory->falseValue;
         case PRIM_EQUALS_NODE:
             return evaluate_PrimEqualsNode(frame, (PrimEqualsNode *) node);
         case PRIM_SMALLER_THAN_NODE:

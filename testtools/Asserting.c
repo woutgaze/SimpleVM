@@ -8,13 +8,13 @@
 #include "Asserting.h"
 #include "../DevTools.h"
 
-void assertTrue(const char *description, bool value) {
+void assertTrue(char *description, bool value) {
     if (!value) {
         panic_a("ASSERTION FAILED", description);
     }
 }
 
-void assertFalse(const char *description, bool value) {
+void assertFalse(char *description, bool value) {
     assertTrue(description, !value);
 }
 
