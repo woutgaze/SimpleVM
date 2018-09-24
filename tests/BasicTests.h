@@ -4,5 +4,7 @@
 
 #ifndef SIMPLEVM_BASICTESTS_H
 #define SIMPLEVM_BASICTESTS_H
+
 void run_BasicTests();
+
 #endif //SIMPLEVM_BASICTESTS_H

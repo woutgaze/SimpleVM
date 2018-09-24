@@ -5,12 +5,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "SizedString.h"
 
 
-static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNode", "UnaryMessageNode", "NaryMessageNode", "SelfNode", "ReadArgNode", "ReturnNode", "ConditionalNode", "WhileTrueNode", "FalseNode", "PrimEqualsNode", "PrimIntSmallerThanNode", "WriteInstVarNode", "SequenceNode", "PrimNotNode", "ArrayConstructionNode", "ReadIndexedNode", "WriteIndexedNode", "PrimGetArraySizeNode", "PrimArrayAtNode", "StringNode", "ArgumentNode", "MethodNode", "BlockNode", "ReadTempNode", "WriteTempNode", "ClassSideNode", "ClassNode", "PrimStringConcatNode", "PrimStringInternNode", "NilNode", "PrimIntDivNode", "PrimIntMulNode", "PrimIntRemNode", "PrimIntSubNode", "TrueNode", "PopNode", "UNDEFINED_38", "UNDEFINED_39", "UNDEFINED_40", "UNDEFINED_41", "UNDEFINED_42", "UNDEFINED_43", "UNDEFINED_44", "UNDEFINED_45", "UNDEFINED_46", "UNDEFINED_47", "UNDEFINED_48", "UNDEFINED_49", "UNDEFINED_50", "UNDEFINED_51", "UNDEFINED_52", "UNDEFINED_53", "UNDEFINED_54", "UNDEFINED_55", "UNDEFINED_56", "UNDEFINED_57", "UNDEFINED_58", "UNDEFINED_59", "UNDEFINED_60", "UNDEFINED_61", "UNDEFINED_62", "UNDEFINED_63", "UNDEFINED_64", "UNDEFINED_65", "UNDEFINED_66", "UNDEFINED_67", "UNDEFINED_68", "UNDEFINED_69", "UNDEFINED_70", "UNDEFINED_71", "UNDEFINED_72", "UNDEFINED_73", "UNDEFINED_74", "UNDEFINED_75", "UNDEFINED_76", "UNDEFINED_77", "UNDEFINED_78", "UNDEFINED_79", "UNDEFINED_80", "UNDEFINED_81", "UNDEFINED_82", "UNDEFINED_83", "UNDEFINED_84", "UNDEFINED_85", "UNDEFINED_86", "UNDEFINED_87", "UNDEFINED_88", "UNDEFINED_89", "UNDEFINED_90", "UNDEFINED_91", "UNDEFINED_92", "UNDEFINED_93", "UNDEFINED_94", "UNDEFINED_95", "UNDEFINED_96", "UNDEFINED_97", "UNDEFINED_98", "UNDEFINED_99", "UNDEFINED_100", "UNDEFINED_101", "UNDEFINED_102", "UNDEFINED_103", "UNDEFINED_104", "UNDEFINED_105", "UNDEFINED_106", "UNDEFINED_107", "UNDEFINED_108", "UNDEFINED_109", "UNDEFINED_110", "UNDEFINED_111", "UNDEFINED_112", "UNDEFINED_113", "UNDEFINED_114", "UNDEFINED_115", "UNDEFINED_116", "UNDEFINED_117", "UNDEFINED_118", "UNDEFINED_119", "UNDEFINED_120", "UNDEFINED_121", "UNDEFINED_122", "UNDEFINED_123", "UNDEFINED_124", "UNDEFINED_125", "UNDEFINED_126", "UNDEFINED_127", "UNDEFINED_128", "UNDEFINED_129", "UNDEFINED_130", "UNDEFINED_131", "UNDEFINED_132", "UNDEFINED_133", "UNDEFINED_134", "UNDEFINED_135", "UNDEFINED_136", "UNDEFINED_137", "UNDEFINED_138", "UNDEFINED_139", "UNDEFINED_140", "UNDEFINED_141", "UNDEFINED_142", "UNDEFINED_143", "UNDEFINED_144", "UNDEFINED_145", "UNDEFINED_146", "UNDEFINED_147", "UNDEFINED_148", "UNDEFINED_149", "UNDEFINED_150", "UNDEFINED_151", "UNDEFINED_152", "UNDEFINED_153", "UNDEFINED_154", "UNDEFINED_155", "UNDEFINED_156", "UNDEFINED_157", "UNDEFINED_158", "UNDEFINED_159", "UNDEFINED_160", "UNDEFINED_161", "UNDEFINED_162", "UNDEFINED_163", "UNDEFINED_164", "UNDEFINED_165", "UNDEFINED_166", "UNDEFINED_167", "UNDEFINED_168", "UNDEFINED_169", "UNDEFINED_170", "UNDEFINED_171", "UNDEFINED_172", "UNDEFINED_173", "UNDEFINED_174", "UNDEFINED_175", "UNDEFINED_176", "UNDEFINED_177", "UNDEFINED_178", "UNDEFINED_179", "UNDEFINED_180", "UNDEFINED_181", "UNDEFINED_182", "UNDEFINED_183", "UNDEFINED_184", "UNDEFINED_185", "UNDEFINED_186", "UNDEFINED_187", "UNDEFINED_188", "UNDEFINED_189", "UNDEFINED_190", "UNDEFINED_191", "UNDEFINED_192", "UNDEFINED_193", "UNDEFINED_194", "UNDEFINED_195", "UNDEFINED_196", "UNDEFINED_197", "UNDEFINED_198", "UNDEFINED_199", "UNDEFINED_200", "UNDEFINED_201", "UNDEFINED_202", "UNDEFINED_203", "UNDEFINED_204", "UNDEFINED_205", "UNDEFINED_206", "UNDEFINED_207", "UNDEFINED_208", "UNDEFINED_209", "UNDEFINED_210", "UNDEFINED_211", "UNDEFINED_212", "UNDEFINED_213", "UNDEFINED_214", "UNDEFINED_215", "UNDEFINED_216", "UNDEFINED_217", "UNDEFINED_218", "UNDEFINED_219", "UNDEFINED_220", "UNDEFINED_221", "UNDEFINED_222", "UNDEFINED_223", "UNDEFINED_224", "UNDEFINED_225", "UNDEFINED_226", "UNDEFINED_227", "UNDEFINED_228", "UNDEFINED_229", "UNDEFINED_230", "UNDEFINED_231", "UNDEFINED_232", "UNDEFINED_233", "UNDEFINED_234", "UNDEFINED_235", "UNDEFINED_236", "UNDEFINED_237", "UNDEFINED_238", "UNDEFINED_239", "UNDEFINED_240", "UNDEFINED_241", "UNDEFINED_242", "UNDEFINED_243", "UNDEFINED_244", "UNDEFINED_245", "UNDEFINED_246", "UNDEFINED_247", "UNDEFINED_248", "UNDEFINED_249", "UNDEFINED_250", "UNDEFINED_251", "UNDEFINED_252", "UNDEFINED_253", "UNDEFINED_254"};
+static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNode", "UnaryMessageNode", "NaryMessageNode", "SelfNode", "ReadArgNode", "ReturnNode", "ConditionalNode", "WhileTrueNode", "FalseNode", "PrimEqualsNode", "PrimIntSmallerThanNode", "WriteInstVarNode", "SequenceNode", "PrimNotNode", "ArrayConstructionNode", "ReadIndexedNode", "WriteIndexedNode", "PrimGetArraySizeNode", "PrimArrayAtNode", "StringNode", "ArgumentNode", "MethodNode", "BlockNode", "ReadTempNode", "WriteTempNode", "ClassSideNode", "ClassNode", "PrimStringConcatNode", "PrimStringInternNode", "NilNode", "PrimIntDivNode", "PrimIntMulNode", "PrimIntRemNode", "PrimIntSubNode", "TrueNode", "PopNode", "CompiledCodeNode", "CompiledMethodNode", "CompiledClassSideNode", "CompiledClassNode", "UNDEFINED_42", "UNDEFINED_43", "UNDEFINED_44", "UNDEFINED_45", "UNDEFINED_46", "UNDEFINED_47", "UNDEFINED_48", "UNDEFINED_49", "UNDEFINED_50", "UNDEFINED_51", "UNDEFINED_52", "UNDEFINED_53", "UNDEFINED_54", "UNDEFINED_55", "UNDEFINED_56", "UNDEFINED_57", "UNDEFINED_58", "UNDEFINED_59", "UNDEFINED_60", "UNDEFINED_61", "UNDEFINED_62", "UNDEFINED_63", "UNDEFINED_64", "UNDEFINED_65", "UNDEFINED_66", "UNDEFINED_67", "UNDEFINED_68", "UNDEFINED_69", "UNDEFINED_70", "UNDEFINED_71", "UNDEFINED_72", "UNDEFINED_73", "UNDEFINED_74", "UNDEFINED_75", "UNDEFINED_76", "UNDEFINED_77", "UNDEFINED_78", "UNDEFINED_79", "UNDEFINED_80", "UNDEFINED_81", "UNDEFINED_82", "UNDEFINED_83", "UNDEFINED_84", "UNDEFINED_85", "UNDEFINED_86", "UNDEFINED_87", "UNDEFINED_88", "UNDEFINED_89", "UNDEFINED_90", "UNDEFINED_91", "UNDEFINED_92", "UNDEFINED_93", "UNDEFINED_94", "UNDEFINED_95", "UNDEFINED_96", "UNDEFINED_97", "UNDEFINED_98", "UNDEFINED_99", "UNDEFINED_100", "UNDEFINED_101", "UNDEFINED_102", "UNDEFINED_103", "UNDEFINED_104", "UNDEFINED_105", "UNDEFINED_106", "UNDEFINED_107", "UNDEFINED_108", "UNDEFINED_109", "UNDEFINED_110", "UNDEFINED_111", "UNDEFINED_112", "UNDEFINED_113", "UNDEFINED_114", "UNDEFINED_115", "UNDEFINED_116", "UNDEFINED_117", "UNDEFINED_118", "UNDEFINED_119", "UNDEFINED_120", "UNDEFINED_121", "UNDEFINED_122", "UNDEFINED_123", "UNDEFINED_124", "UNDEFINED_125", "UNDEFINED_126", "UNDEFINED_127", "UNDEFINED_128", "UNDEFINED_129", "UNDEFINED_130", "UNDEFINED_131", "UNDEFINED_132", "UNDEFINED_133", "UNDEFINED_134", "UNDEFINED_135", "UNDEFINED_136", "UNDEFINED_137", "UNDEFINED_138", "UNDEFINED_139", "UNDEFINED_140", "UNDEFINED_141", "UNDEFINED_142", "UNDEFINED_143", "UNDEFINED_144", "UNDEFINED_145", "UNDEFINED_146", "UNDEFINED_147", "UNDEFINED_148", "UNDEFINED_149", "UNDEFINED_150", "UNDEFINED_151", "UNDEFINED_152", "UNDEFINED_153", "UNDEFINED_154", "UNDEFINED_155", "UNDEFINED_156", "UNDEFINED_157", "UNDEFINED_158", "UNDEFINED_159", "UNDEFINED_160", "UNDEFINED_161", "UNDEFINED_162", "UNDEFINED_163", "UNDEFINED_164", "UNDEFINED_165", "UNDEFINED_166", "UNDEFINED_167", "UNDEFINED_168", "UNDEFINED_169", "UNDEFINED_170", "UNDEFINED_171", "UNDEFINED_172", "UNDEFINED_173", "UNDEFINED_174", "UNDEFINED_175", "UNDEFINED_176", "UNDEFINED_177", "UNDEFINED_178", "UNDEFINED_179", "UNDEFINED_180", "UNDEFINED_181", "UNDEFINED_182", "UNDEFINED_183", "UNDEFINED_184", "UNDEFINED_185", "UNDEFINED_186", "UNDEFINED_187", "UNDEFINED_188", "UNDEFINED_189", "UNDEFINED_190", "UNDEFINED_191", "UNDEFINED_192", "UNDEFINED_193", "UNDEFINED_194", "UNDEFINED_195", "UNDEFINED_196", "UNDEFINED_197", "UNDEFINED_198", "UNDEFINED_199", "UNDEFINED_200", "UNDEFINED_201", "UNDEFINED_202", "UNDEFINED_203", "UNDEFINED_204", "UNDEFINED_205", "UNDEFINED_206", "UNDEFINED_207", "UNDEFINED_208", "UNDEFINED_209", "UNDEFINED_210", "UNDEFINED_211", "UNDEFINED_212", "UNDEFINED_213", "UNDEFINED_214", "UNDEFINED_215", "UNDEFINED_216", "UNDEFINED_217", "UNDEFINED_218", "UNDEFINED_219", "UNDEFINED_220", "UNDEFINED_221", "UNDEFINED_222", "UNDEFINED_223", "UNDEFINED_224", "UNDEFINED_225", "UNDEFINED_226", "UNDEFINED_227", "UNDEFINED_228", "UNDEFINED_229", "UNDEFINED_230", "UNDEFINED_231", "UNDEFINED_232", "UNDEFINED_233", "UNDEFINED_234", "UNDEFINED_235", "UNDEFINED_236", "UNDEFINED_237", "UNDEFINED_238", "UNDEFINED_239", "UNDEFINED_240", "UNDEFINED_241", "UNDEFINED_242", "UNDEFINED_243", "UNDEFINED_244", "UNDEFINED_245", "UNDEFINED_246", "UNDEFINED_247", "UNDEFINED_248", "UNDEFINED_249", "UNDEFINED_250", "UNDEFINED_251", "UNDEFINED_252", "UNDEFINED_253", "UNDEFINED_254"};
 
 #define ARGUMENT_NODE 22
 #define ARRAY_CONSTRUCTION_NODE 16
+#define COMPILED_CODE_NODE 38
 #define CONDITIONAL_NODE 8
 #define FALSE_NODE 10
 #define INT_NODE 0
@@ -44,8 +46,11 @@ static const char * NODE_LABELS[] = {"IntNode", "PrimIntAddNode", "ReadInstVarNo
 #define WRITE_INST_VAR_NODE 13
 #define WRITE_TEMP_NODE 26
 #define BLOCK_NODE 24
+#define COMPILED_METHOD_NODE 39
+#define COMPILED_CLASS_SIDE_NODE 40
 #define METHOD_NODE 23
 #define CLASS_SIDE_NODE 27
+#define COMPILED_CLASS_NODE 41
 #define CLASS_NODE 28
 
 
@@ -56,6 +61,8 @@ typedef struct Node {
 typedef struct ArgumentNode ArgumentNode;
 
 typedef struct ArrayConstructionNode ArrayConstructionNode;
+
+typedef struct CompiledCodeNode CompiledCodeNode;
 
 typedef struct ConditionalNode ConditionalNode;
 
@@ -123,9 +130,15 @@ typedef struct WriteTempNode WriteTempNode;
 
 typedef struct BlockNode BlockNode;
 
+typedef struct CompiledMethodNode CompiledMethodNode;
+
+typedef struct CompiledClassSideNode CompiledClassSideNode;
+
 typedef struct MethodNode MethodNode;
 
 typedef struct ClassSideNode ClassSideNode;
+
+typedef struct CompiledClassNode CompiledClassNode;
 
 typedef struct ClassNode ClassNode;
 
@@ -139,6 +152,11 @@ typedef struct ByteArray {
 	char* elements;
 } ByteArray;
 
+typedef struct CompiledMethodNodeArray {
+	uint32_t size;
+	CompiledMethodNode ** elements;
+} CompiledMethodNodeArray;
+
 typedef struct MethodNodeArray {
 	uint32_t size;
 	MethodNode ** elements;
@@ -151,12 +169,21 @@ typedef struct NodeArray {
 
 struct ArgumentNode {
 	Node super;
-	const char * name;
+	SizedString * name;
 };
 
 struct ArrayConstructionNode {
 	Node super;
 	NodeArray elements;
+};
+
+struct CompiledCodeNode {
+	Node super;
+	uint32_t argumentsSize;
+	uint32_t temporariesSize;
+	uint32_t maxStackDepth;
+	uint32_t instructionsSize;
+	ByteArray bytecode;
 };
 
 struct ConditionalNode {
@@ -177,7 +204,7 @@ struct IntNode {
 
 struct NaryMessageNode {
 	Node super;
-	const char * selector;
+	SizedString * selector;
 	Node * receiver;
 	NodeArray arguments;
 };
@@ -291,14 +318,12 @@ struct SelfNode {
 
 struct SequenceNode {
 	Node super;
-	uint32_t maxStackDepth;
-	uint32_t instructionsSize;
-	ByteArray bytecode;
+	NodeArray statements;
 };
 
 struct StringNode {
 	Node super;
-	const char * value;
+	SizedString * value;
 };
 
 struct TrueNode {
@@ -307,7 +332,7 @@ struct TrueNode {
 
 struct UnaryMessageNode {
 	Node super;
-	const char * selector;
+	SizedString * selector;
 	Node * receiver;
 };
 
@@ -339,12 +364,24 @@ struct BlockNode {
 	Node super;
 	ArgumentNodeArray arguments;
 	ArgumentNodeArray temporaries;
-	Node * body;
+	SequenceNode * body;
+};
+
+struct CompiledMethodNode {
+	Node super;
+	SizedString * selector;
+	CompiledCodeNode * code;
+};
+
+struct CompiledClassSideNode {
+	Node super;
+	ArgumentNodeArray instVars;
+	CompiledMethodNodeArray methods;
 };
 
 struct MethodNode {
 	Node super;
-	const char * selector;
+	SizedString * selector;
 	BlockNode * block;
 };
 
@@ -354,18 +391,29 @@ struct ClassSideNode {
 	MethodNodeArray methods;
 };
 
+struct CompiledClassNode {
+	Node super;
+	SizedString * name;
+	SizedString * superName;
+	uint32_t indexedType;
+	CompiledClassSideNode * instSide;
+	CompiledClassSideNode * classSide;
+};
+
 struct ClassNode {
 	Node super;
-	const char * name;
-	const char * superName;
+	SizedString * name;
+	SizedString * superName;
 	uint32_t indexedType;
 	ClassSideNode * instSide;
 	ClassSideNode * classSide;
 };
 
-Node *newArgument(const char * name);
+Node *newArgument(SizedString * name);
 
 Node *newArrayConstruction(Node ** elements, uint32_t elements_size);
+
+Node *newCompiledCode(uint32_t argumentsSize, uint32_t temporariesSize, uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size);
 
 Node *newConditional(Node * condition, Node * trueBranch, Node * falseBranch);
 
@@ -373,7 +421,7 @@ Node *newFalse();
 
 Node *newInt(int value);
 
-Node *newNaryMessage(const char * selector, Node * receiver, Node ** arguments, uint32_t arguments_size);
+Node *newNaryMessage(SizedString * selector, Node * receiver, Node ** arguments, uint32_t arguments_size);
 
 Node *newNil();
 
@@ -415,13 +463,13 @@ Node *newReturn(Node * value);
 
 Node *newSelf();
 
-Node *newSequence(uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size);
+Node *newSequence(Node ** statements, uint32_t statements_size);
 
-Node *newString(const char * value);
+Node *newString(SizedString * value);
 
 Node *newTrue();
 
-Node *newUnaryMessage(const char * selector, Node * receiver);
+Node *newUnaryMessage(SizedString * selector, Node * receiver);
 
 Node *newWhileTrue(Node * condition, Node * body);
 
@@ -431,13 +479,19 @@ Node *newWriteInstVar(uint32_t index, Node * value);
 
 Node *newWriteTemp(uint32_t index, Node * value);
 
-Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, Node * body);
+Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, SequenceNode * body);
 
-Node *newMethod(const char * selector, BlockNode * block);
+Node *newCompiledMethod(SizedString * selector, CompiledCodeNode * code);
+
+Node *newCompiledClassSide(ArgumentNode ** instVars, uint32_t instVars_size, CompiledMethodNode ** methods, uint32_t methods_size);
+
+Node *newMethod(SizedString * selector, BlockNode * block);
 
 Node *newClassSide(ArgumentNode ** instVars, uint32_t instVars_size, MethodNode ** methods, uint32_t methods_size);
 
-Node *newClass(const char * name, const char * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide);
+Node *newCompiledClass(SizedString * name, SizedString * superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide);
+
+Node *newClass(SizedString * name, SizedString * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide);
 
 
 #endif //SIMPLEVM_ASTNODES_H

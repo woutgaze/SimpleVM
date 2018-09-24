@@ -10,7 +10,7 @@
 
 Node * readFailed_V1();
 
-char * readString_V1(FILE *fileptr);
+SizedString * readString_V1(FILE *fileptr);
 int readInt_V1(FILE *fileptr);
 
 uint16_t readIndex_V1(FILE *fileptr);
@@ -20,7 +20,9 @@ Node *readNode_V1(FILE *fileptr);
 NodeArray readNodeArray_V1(FILE *fileptr);
 ArgumentNodeArray readArgumentNodeArray_V1(FILE *fileptr);
 MethodNodeArray readMethodNodeArray_V1(FILE *fileptr);
+CompiledMethodNodeArray readCompiledMethodNodeArray_V1(FILE *fileptr);
 ByteArray readByteArray_V1(FILE *fileptr);
+
 
 
 

@@ -5,7 +5,7 @@
 #include "ASTNodes.h"
 
 
-Node *newArgument(const char * name) {
+Node *newArgument(SizedString * name) {
     ArgumentNode *node = (ArgumentNode *) malloc(sizeof(ArgumentNode));
     node->super.type = ARGUMENT_NODE;
     node->name = name;
@@ -17,6 +17,18 @@ Node *newArrayConstruction(Node ** elements, uint32_t elements_size) {
     node->super.type = ARRAY_CONSTRUCTION_NODE;
     node->elements.elements = elements;
     node->elements.size = elements_size;
+    return (Node *) node;
+}
+
+Node *newCompiledCode(uint32_t argumentsSize, uint32_t temporariesSize, uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size) {
+    CompiledCodeNode *node = (CompiledCodeNode *) malloc(sizeof(CompiledCodeNode));
+    node->super.type = COMPILED_CODE_NODE;
+    node->argumentsSize = argumentsSize;
+    node->temporariesSize = temporariesSize;
+    node->maxStackDepth = maxStackDepth;
+    node->instructionsSize = instructionsSize;
+    node->bytecode.elements = bytecode;
+    node->bytecode.size = bytecode_size;
     return (Node *) node;
 }
 
@@ -42,7 +54,7 @@ Node *newInt(int value) {
     return (Node *) node;
 }
 
-Node *newNaryMessage(const char * selector, Node * receiver, Node ** arguments, uint32_t arguments_size) {
+Node *newNaryMessage(SizedString * selector, Node * receiver, Node ** arguments, uint32_t arguments_size) {
     NaryMessageNode *node = (NaryMessageNode *) malloc(sizeof(NaryMessageNode));
     node->super.type = NARY_MESSAGE_NODE;
     node->selector = selector;
@@ -199,17 +211,15 @@ Node *newSelf() {
     return (Node *) node;
 }
 
-Node *newSequence(uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size) {
+Node *newSequence(Node ** statements, uint32_t statements_size) {
     SequenceNode *node = (SequenceNode *) malloc(sizeof(SequenceNode));
     node->super.type = SEQUENCE_NODE;
-    node->maxStackDepth = maxStackDepth;
-    node->instructionsSize = instructionsSize;
-    node->bytecode.elements = bytecode;
-    node->bytecode.size = bytecode_size;
+    node->statements.elements = statements;
+    node->statements.size = statements_size;
     return (Node *) node;
 }
 
-Node *newString(const char * value) {
+Node *newString(SizedString * value) {
     StringNode *node = (StringNode *) malloc(sizeof(StringNode));
     node->super.type = STRING_NODE;
     node->value = value;
@@ -222,7 +232,7 @@ Node *newTrue() {
     return (Node *) node;
 }
 
-Node *newUnaryMessage(const char * selector, Node * receiver) {
+Node *newUnaryMessage(SizedString * selector, Node * receiver) {
     UnaryMessageNode *node = (UnaryMessageNode *) malloc(sizeof(UnaryMessageNode));
     node->super.type = UNARY_MESSAGE_NODE;
     node->selector = selector;
@@ -262,7 +272,7 @@ Node *newWriteTemp(uint32_t index, Node * value) {
     return (Node *) node;
 }
 
-Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, Node * body) {
+Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, SequenceNode * body) {
     BlockNode *node = (BlockNode *) malloc(sizeof(BlockNode));
     node->super.type = BLOCK_NODE;
     node->arguments.elements = arguments;
@@ -273,7 +283,25 @@ Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode 
     return (Node *) node;
 }
 
-Node *newMethod(const char * selector, BlockNode * block) {
+Node *newCompiledMethod(SizedString * selector, CompiledCodeNode * code) {
+    CompiledMethodNode *node = (CompiledMethodNode *) malloc(sizeof(CompiledMethodNode));
+    node->super.type = COMPILED_METHOD_NODE;
+    node->selector = selector;
+    node->code = code;
+    return (Node *) node;
+}
+
+Node *newCompiledClassSide(ArgumentNode ** instVars, uint32_t instVars_size, CompiledMethodNode ** methods, uint32_t methods_size) {
+    CompiledClassSideNode *node = (CompiledClassSideNode *) malloc(sizeof(CompiledClassSideNode));
+    node->super.type = COMPILED_CLASS_SIDE_NODE;
+    node->instVars.elements = instVars;
+    node->instVars.size = instVars_size;
+    node->methods.elements = methods;
+    node->methods.size = methods_size;
+    return (Node *) node;
+}
+
+Node *newMethod(SizedString * selector, BlockNode * block) {
     MethodNode *node = (MethodNode *) malloc(sizeof(MethodNode));
     node->super.type = METHOD_NODE;
     node->selector = selector;
@@ -291,7 +319,18 @@ Node *newClassSide(ArgumentNode ** instVars, uint32_t instVars_size, MethodNode 
     return (Node *) node;
 }
 
-Node *newClass(const char * name, const char * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide) {
+Node *newCompiledClass(SizedString * name, SizedString * superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide) {
+    CompiledClassNode *node = (CompiledClassNode *) malloc(sizeof(CompiledClassNode));
+    node->super.type = COMPILED_CLASS_NODE;
+    node->name = name;
+    node->superName = superName;
+    node->indexedType = indexedType;
+    node->instSide = instSide;
+    node->classSide = classSide;
+    return (Node *) node;
+}
+
+Node *newClass(SizedString * name, SizedString * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide) {
     ClassNode *node = (ClassNode *) malloc(sizeof(ClassNode));
     node->super.type = CLASS_NODE;
     node->name = name;

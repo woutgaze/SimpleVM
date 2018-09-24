@@ -7,16 +7,18 @@
 #include "NodeReader_V1_Tools.h"
 #include "../ASTNodes.h"
 #include "../DevTools.h"
+#include "../SizedString.h"
 
 Node * readFailed_V1() {
     panic("Read failed");
 }
 
-char * readString_V1(FILE *fileptr){
+SizedString * readString_V1(FILE *fileptr){
     uint16_t size;
     if (!fread(&size, sizeof(uint16_t), 1, fileptr) == 1)  readFailed_V1();
-    char * string = malloc(size);
-    if (!fread(string, 1, size, fileptr) == size)  readFailed_V1();
+    SizedString * string = (SizedString *) malloc(sizeof(SizedString) + size);
+    if (!fread(string->elements, 1, size, fileptr) == size)  readFailed_V1();
+    string->size = size;
     return string;
 }
 
@@ -25,7 +27,7 @@ ByteArray readByteArray_V1(FILE *fileptr) {
     ByteArray value;
     uint16_t size;
 
-    if (!fread(&value.size, sizeof(uint16_t), 1, fileptr) == 1)  readFailed_V1();
+    if (!fread(&size, sizeof(uint16_t), 1, fileptr) == 1)  readFailed_V1();
     char * bytes = malloc(size);
     if (!fread(bytes, 1, size, fileptr) == size)  readFailed_V1();
     value.size = size;
@@ -80,5 +82,18 @@ MethodNodeArray readMethodNodeArray_V1(FILE *fileptr) {
     }
     return value;
 }
+
+CompiledMethodNodeArray readCompiledMethodNodeArray_V1(FILE *fileptr) {
+    CompiledMethodNodeArray value;
+    uint16_t size;
+    if (!fread(&size, sizeof(uint16_t), 1, fileptr) == 1) readFailed_V1();
+    value.size =size;
+    value.elements = malloc(size * sizeof(Node *));
+    for (int i = 0; i < size; i++) {
+        value.elements[i] = (CompiledMethodNode*) readNode_V1(fileptr);
+    }
+    return value;
+}
+
 
 

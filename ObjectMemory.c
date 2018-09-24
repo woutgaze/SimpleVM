@@ -173,8 +173,8 @@ size_t getIndexedSize(Object *obj) {
     return firstSlot[class->classNode->instSide->instVars.size];
 }
 
-MethodNode *createMethod(const char *selector, Node *node) {
-    return (MethodNode *) newMethod(selector, (BlockNode *) newBlock(NULL, 0, NULL, 0, node));
+MethodNode *createMethod(SizedString *selector, Node *node) {
+    return (MethodNode *) newMethod(selector, (BlockNode *) newBlock(NULL, 0, NULL, 0, (SequenceNode *) node));
 }
 
 Class *createClassNoRegister(ObjectMemory *om, ClassNode *classNode) {
@@ -187,10 +187,10 @@ Class *createClassNoRegister(ObjectMemory *om, ClassNode *classNode) {
     return class;
 }
 
-Class *findClass(ObjectMemory *om, const char *name) {
+Class *findClass(ObjectMemory *om, SizedString *name) {
     for (int i = 0; i < om->classTable.used; i++) {
         Class *class = (Class *) om->classTable.entries[i].object;
-        if (strcmp(class->classNode->name, name) == 0) return class;
+        if (sstrcmp(class->classNode->name, name) == 0) return class;
     };
     return NULL;
 }
@@ -208,13 +208,48 @@ Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode) {
 }
 
 Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType) {
-    ArgumentNode *instVars[] = {(ArgumentNode *) newArgument("t1"), (ArgumentNode *) newArgument("t2"),
-                                (ArgumentNode *) newArgument("t3")};
+    ArgumentNode *instVars[] = {(ArgumentNode *) newArgument(getSizedString("t1")), (ArgumentNode *) newArgument(getSizedString("t2")),
+                                (ArgumentNode *) newArgument(getSizedString("t3"))};
     ClassSideNode *instSide = (ClassSideNode *) newClassSide(instVars, instVarSize, methods, methodsSize);
     ClassSideNode *classSide = (ClassSideNode *) newClassSide(NULL, 0, NULL, 0);
-    ClassNode *classNode = (ClassNode *) newClass("Test", "", indexingType, instSide, classSide);
+    ClassNode *classNode = (ClassNode *) newClass(getSizedString("Test"), getSizedString("Object"), indexingType, instSide, classSide);
     return createClassFromNode(om, classNode);
 }
+
+CompiledClass *createCompiledClassNoRegister(ObjectMemory *om, CompiledClassNode *classNode) {
+    if ((classNode->indexedType == BYTE_INDEXED) && (classNode->instSide->instVars.size != 0)) {
+        panic("Class cannot be both byte indexed and holding instVars");
+    }
+    CompiledClass *class = (CompiledClass *) malloc(sizeof(CompiledClass));
+    class->super.class = NULL;
+    class->classNode = classNode;
+    return class;
+}
+
+void registerCompiledClass(ObjectMemory *om, CompiledClass *class) {
+    registerObject(om, (Object *) class);
+    registerObjectInTable(&om->classTable, (Object *) class);
+    class->superClass = (CompiledClass *) findClass(om, class->classNode->superName);
+}
+
+CompiledClass *createCompiledClassFromNode(ObjectMemory *om, CompiledClassNode *classNode) {
+    CompiledClass *class = createCompiledClassNoRegister(om, classNode);
+    registerCompiledClass(om, class);
+    return class;
+}
+
+CompiledClass *createCompiledClass(ObjectMemory *om, size_t instVarSize, CompiledMethodNode **methods, size_t methodsSize,
+                           int indexingType) {
+    ArgumentNode *instVars[] = {(ArgumentNode *) newArgument(getSizedString("t1")), (ArgumentNode *) newArgument(getSizedString("t2")),
+                                (ArgumentNode *) newArgument(getSizedString("t3"))};
+    CompiledClassSideNode *instSide = (CompiledClassSideNode *) newCompiledClassSide(instVars, instVarSize, methods,
+                                                                                     methodsSize);
+    CompiledClassSideNode *classSide = (CompiledClassSideNode *) newCompiledClassSide(NULL, 0, NULL, 0);
+    CompiledClassNode *classNode = (CompiledClassNode *) newCompiledClass(getSizedString("Test"), getSizedString("Object"), indexingType, instSide,
+                                                                          classSide);
+    return createCompiledClassFromNode(om, classNode);
+}
+
 
 ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize) {
     Object *obj = newObject(class ? class : om->nilClass, values, indexedSize);
@@ -247,17 +282,20 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize) {
 }
 
 ClassNode *newUndefinedObjectClass() {
-    char bytes[] = { 83, 86, 1, 28, 15, 0, 85, 110, 100, 101, 102, 105, 110, 101, 100, 79, 98, 106, 101, 99, 116, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 2, 0, 36, 7, 27, 0, 0, 0, 0 };
+    char bytes[] = {83, 86, 1, 28, 15, 0, 85, 110, 100, 101, 102, 105, 110, 101, 100, 79, 98, 106, 101, 99, 116, 6, 0,
+                    79, 98, 106, 101, 99, 116, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0,
+                    14, 1, 0, 7, 36, 27, 0, 0, 0, 0};
     return (ClassNode *) readNodeFromBytes(bytes);
 }
 
 ClassNode *newObjectClass() {
-    char bytes[] = { 83, 86, 1, 28, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78, 105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 2, 0, 10, 7, 27, 0, 0, 0, 0 };
+    char bytes[] = {83, 86, 1, 28, 6, 0, 79, 98, 106, 101, 99, 116, 0, 0, 0, 0, 27, 0, 0, 1, 0, 23, 5, 0, 105, 115, 78,
+                    105, 108, 24, 0, 0, 0, 0, 14, 1, 0, 7, 10, 27, 0, 0, 0, 0};
     return (ClassNode *) readNodeFromBytes(bytes);
 }
 
 ClassNode *newEmptyClass(const char *name, const char *superName, uint32_t indexedType) {
-    return (ClassNode *) newClass(name, superName, indexedType, (ClassSideNode *) newClassSide(NULL, 0, NULL, 0),
+    return (ClassNode *) newClass(getSizedString(name), getSizedString(superName), indexedType, (ClassSideNode *) newClassSide(NULL, 0, NULL, 0),
                                   (ClassSideNode *) newClassSide(NULL, 0, NULL, 0));
 }
 

@@ -7,7 +7,7 @@
 #include "../ASTNodes.h"
 
 Node *readArgumentNode_V1(FILE *fileptr) {
-    const char * name = readString_V1(fileptr);
+    SizedString * name = readString_V1(fileptr);
 
     return newArgument(name);
 }
@@ -16,6 +16,20 @@ Node *readArrayConstructionNode_V1(FILE *fileptr) {
     NodeArray elements = readNodeArray_V1(fileptr);
 
     return newArrayConstruction(elements.elements, elements.size);
+}
+
+Node *readCompiledCodeNode_V1(FILE *fileptr) {
+    uint32_t argumentsSize = readIndex_V1(fileptr);
+
+    uint32_t temporariesSize = readIndex_V1(fileptr);
+
+    uint32_t maxStackDepth = readIndex_V1(fileptr);
+
+    uint32_t instructionsSize = readIndex_V1(fileptr);
+
+    ByteArray bytecode = readByteArray_V1(fileptr);
+
+    return newCompiledCode(argumentsSize, temporariesSize, maxStackDepth, instructionsSize, bytecode.elements, bytecode.size);
 }
 
 Node *readConditionalNode_V1(FILE *fileptr) {
@@ -39,7 +53,7 @@ Node *readIntNode_V1(FILE *fileptr) {
 }
 
 Node *readNaryMessageNode_V1(FILE *fileptr) {
-    const char * selector = readString_V1(fileptr);
+    SizedString * selector = readString_V1(fileptr);
 
     Node * receiver = (Node *) readNode_V1(fileptr);
 
@@ -183,17 +197,13 @@ Node *readSelfNode_V1(FILE *fileptr) {
 }
 
 Node *readSequenceNode_V1(FILE *fileptr) {
-    uint32_t maxStackDepth = readIndex_V1(fileptr);
+    NodeArray statements = readNodeArray_V1(fileptr);
 
-    uint32_t instructionsSize = readIndex_V1(fileptr);
-
-    ByteArray bytecode = readByteArray_V1(fileptr);
-
-    return newSequence(maxStackDepth, instructionsSize, bytecode.elements, bytecode.size);
+    return newSequence(statements.elements, statements.size);
 }
 
 Node *readStringNode_V1(FILE *fileptr) {
-    const char * value = readString_V1(fileptr);
+    SizedString * value = readString_V1(fileptr);
 
     return newString(value);
 }
@@ -203,7 +213,7 @@ Node *readTrueNode_V1(FILE *fileptr) {
 }
 
 Node *readUnaryMessageNode_V1(FILE *fileptr) {
-    const char * selector = readString_V1(fileptr);
+    SizedString * selector = readString_V1(fileptr);
 
     Node * receiver = (Node *) readNode_V1(fileptr);
 
@@ -247,13 +257,29 @@ Node *readBlockNode_V1(FILE *fileptr) {
 
     ArgumentNodeArray temporaries = readArgumentNodeArray_V1(fileptr);
 
-    Node * body = (Node *) readNode_V1(fileptr);
+    SequenceNode * body = (SequenceNode *) readNode_V1(fileptr);
 
     return newBlock(arguments.elements, arguments.size, temporaries.elements, temporaries.size, body);
 }
 
+Node *readCompiledMethodNode_V1(FILE *fileptr) {
+    SizedString * selector = readString_V1(fileptr);
+
+    CompiledCodeNode * code = (CompiledCodeNode *) readNode_V1(fileptr);
+
+    return newCompiledMethod(selector, code);
+}
+
+Node *readCompiledClassSideNode_V1(FILE *fileptr) {
+    ArgumentNodeArray instVars = readArgumentNodeArray_V1(fileptr);
+
+    CompiledMethodNodeArray methods = readCompiledMethodNodeArray_V1(fileptr);
+
+    return newCompiledClassSide(instVars.elements, instVars.size, methods.elements, methods.size);
+}
+
 Node *readMethodNode_V1(FILE *fileptr) {
-    const char * selector = readString_V1(fileptr);
+    SizedString * selector = readString_V1(fileptr);
 
     BlockNode * block = (BlockNode *) readNode_V1(fileptr);
 
@@ -268,10 +294,24 @@ Node *readClassSideNode_V1(FILE *fileptr) {
     return newClassSide(instVars.elements, instVars.size, methods.elements, methods.size);
 }
 
-Node *readClassNode_V1(FILE *fileptr) {
-    const char * name = readString_V1(fileptr);
+Node *readCompiledClassNode_V1(FILE *fileptr) {
+    SizedString * name = readString_V1(fileptr);
 
-    const char * superName = readString_V1(fileptr);
+    SizedString * superName = readString_V1(fileptr);
+
+    uint32_t indexedType = readIndex_V1(fileptr);
+
+    CompiledClassSideNode * instSide = (CompiledClassSideNode *) readNode_V1(fileptr);
+
+    CompiledClassSideNode * classSide = (CompiledClassSideNode *) readNode_V1(fileptr);
+
+    return newCompiledClass(name, superName, indexedType, instSide, classSide);
+}
+
+Node *readClassNode_V1(FILE *fileptr) {
+    SizedString * name = readString_V1(fileptr);
+
+    SizedString * superName = readString_V1(fileptr);
 
     uint32_t indexedType = readIndex_V1(fileptr);
 
@@ -291,6 +331,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readArgumentNode_V1(fileptr);
         case ARRAY_CONSTRUCTION_NODE:
             return readArrayConstructionNode_V1(fileptr);
+        case COMPILED_CODE_NODE:
+            return readCompiledCodeNode_V1(fileptr);
         case CONDITIONAL_NODE:
             return readConditionalNode_V1(fileptr);
         case FALSE_NODE:
@@ -357,10 +399,16 @@ Node *readNode_V1(FILE *fileptr) {
             return readWriteTempNode_V1(fileptr);
         case BLOCK_NODE:
             return readBlockNode_V1(fileptr);
+        case COMPILED_METHOD_NODE:
+            return readCompiledMethodNode_V1(fileptr);
+        case COMPILED_CLASS_SIDE_NODE:
+            return readCompiledClassSideNode_V1(fileptr);
         case METHOD_NODE:
             return readMethodNode_V1(fileptr);
         case CLASS_SIDE_NODE:
             return readClassSideNode_V1(fileptr);
+        case COMPILED_CLASS_NODE:
+            return readCompiledClassNode_V1(fileptr);
         case CLASS_NODE:
             return readClassNode_V1(fileptr);
     }

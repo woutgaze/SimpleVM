@@ -17,6 +17,7 @@
 
 
 typedef struct Class Class;
+typedef struct CompiledClass CompiledClass;
 
 typedef struct Object {
     Class *class;
@@ -37,6 +38,12 @@ typedef struct Class {
     ClassNode * classNode;
     Class * superClass;
 } Class;
+
+typedef struct CompiledClass {
+    Object super;
+    CompiledClassNode * classNode;
+    CompiledClass * superClass;
+} CompiledClass;
 
 typedef struct {
     ObjectTableEntry *entries;
@@ -93,9 +100,10 @@ ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[
 
 Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 
-MethodNode *createMethod(const char *selector, Node *node);
+MethodNode *createMethod(SizedString *selector, Node *node);
 
 Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType);
+CompiledClass *createCompiledClass(ObjectMemory *om, size_t instVarSize, CompiledMethodNode **methods, size_t methodsSize, int indexingType);
 
 Class *createClassFromNode(ObjectMemory *om, ClassNode *classNode);
 

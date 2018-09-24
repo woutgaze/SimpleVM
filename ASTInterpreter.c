@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "Interpreter.h"
+#include "ASTInterpreter.h"
 #include "DevTools.h"
 #include "Hashing.h"
 
 
-ObjectPointer evaluate(Frame *frame, Node *node);
+ObjectPointer evaluate(ASTFrame *frame, Node *node);
 
 ObjectPointer primIntAdd(ObjectPointer left, ObjectPointer right) {
     int leftValue = getInt(left);
@@ -14,24 +14,25 @@ ObjectPointer primIntAdd(ObjectPointer left, ObjectPointer right) {
     return registerInt(leftValue + rightValue);
 }
 
-ObjectPointer sendUnaryMessage(const Frame *frame, ObjectPointer receiver, const char *selector) { return perform(frame->objectmemory, receiver, selector, NULL); }
+ObjectPointer sendUnaryMessage(const ASTFrame *frame, ObjectPointer receiver, const char *selector) { return ast_perform(
+            frame->objectmemory, receiver, selector, NULL); }
 
-ObjectPointer evaluate_NaryMessageNode(Frame *frame, NaryMessageNode *node) {
+ObjectPointer evaluate_NaryMessageNode(ASTFrame *frame, NaryMessageNode *node) {
     ObjectPointer receiver = evaluate(frame, node->receiver);
     ObjectPointer *args = (ObjectPointer *) malloc(sizeof(ObjectPointer *) * node->arguments.size);
     for (int i = 0; i < node->arguments.size; i++) {
         args[i] = evaluate(frame, node->arguments.elements[i]);
     }
-    ObjectPointer result = perform(frame->objectmemory, receiver, node->selector, args);
+    ObjectPointer result = ast_perform(frame->objectmemory, receiver, node->selector, args);
     free(args);
     return result;
 }
 
-ObjectPointer evaluate_ReadArgNode(Frame *frame, ReadArgNode *node) {
+ObjectPointer evaluate_ReadArgNode(ASTFrame *frame, ReadArgNode *node) {
     return frame->arguments[node->index];
 }
 
-ObjectPointer evaluate_ConditionalNode(Frame *frame, ConditionalNode *node) {
+ObjectPointer evaluate_ConditionalNode(ASTFrame *frame, ConditionalNode *node) {
     ObjectPointer condition = evaluate(frame, node->condition);
     if (getBool(frame->objectmemory, condition)) {
         return evaluate(frame, node->trueBranch);
@@ -40,43 +41,46 @@ ObjectPointer evaluate_ConditionalNode(Frame *frame, ConditionalNode *node) {
     }
 }
 
-ObjectPointer evaluate_PrimEqualsNode(Frame *frame, PrimEqualsNode *node) {
+ObjectPointer evaluate_PrimEqualsNode(ASTFrame *frame, PrimEqualsNode *node) {
     ObjectPointer leftValue = evaluate(frame, node->left);
     ObjectPointer rightValue = evaluate(frame, node->right);
     return getBoolValue(frame->objectmemory, leftValue == rightValue);
 }
 
-ObjectPointer evaluate_PrimSmallerThanNode(Frame *frame, PrimIntSmallerThanNode *node) {
+ObjectPointer evaluate_PrimSmallerThanNode(ASTFrame *frame, PrimIntSmallerThanNode *node) {
     int leftValue = getInt(evaluate(frame, node->left));
     int rightValue = getInt(evaluate(frame, node->right));
     return getBoolValue(frame->objectmemory, leftValue < rightValue);
 }
 
 
-ObjectPointer evaluate_WriteInstVarNode(Frame *frame, WriteInstVarNode *node) {
+ObjectPointer evaluate_WriteInstVarNode(ASTFrame *frame, WriteInstVarNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     setInstVar(frame->self, node->index, value);
     return value;
 }
 
-ObjectPointer evaluate_SequenceNode(Frame *frame, SequenceNode *node) {
+ObjectPointer evaluate_SequenceNode(ASTFrame *frame, SequenceNode *node) {
     ObjectPointer result = frame->objectmemory->nilValue;
-    niy();
+    for (int i = 0; i < node->statements.size; i++) {
+        result = evaluate(frame, node->statements.elements[i]);
+    }
+    return result;
 }
 
-ObjectPointer evaluate_PrimNotNode(Frame *frame, PrimNotNode *node) {
+ObjectPointer evaluate_PrimNotNode(ASTFrame *frame, PrimNotNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     return getBoolValue(frame->objectmemory, !getBool(frame->objectmemory, value));
 }
 
-ObjectPointer evaluate_WhileTrueNode(Frame *frame, WhileTrueNode *node) {
+ObjectPointer evaluate_WhileTrueNode(ASTFrame *frame, WhileTrueNode *node) {
     while (getBool(frame->objectmemory, evaluate(frame, node->condition))) {
         evaluate(frame, node->body);
     }
     return frame->objectmemory->nilValue;
 }
 
-ObjectPointer evaluate_ArrayConstructionNode(Frame *frame, ArrayConstructionNode *node) {
+ObjectPointer evaluate_ArrayConstructionNode(ASTFrame *frame, ArrayConstructionNode *node) {
     Class *arrayClass = frame->objectmemory->arrayClass;
     Object *obj = newObject(arrayClass, NULL, node->elements.size);
     for (int i = 0; i < node->elements.size; i++) {
@@ -87,28 +91,28 @@ ObjectPointer evaluate_ArrayConstructionNode(Frame *frame, ArrayConstructionNode
     return registerObject(frame->objectmemory, obj);
 }
 
-ObjectPointer evaluate_ReadIndexedNode(Frame *frame, ReadIndexedNode *node) {
+ObjectPointer evaluate_ReadIndexedNode(ASTFrame *frame, ReadIndexedNode *node) {
     return getIndexed(frame->self, node->index);
 }
 
-ObjectPointer evaluate_WriteIndexedNode(Frame *frame, WriteIndexedNode *node) {
+ObjectPointer evaluate_WriteIndexedNode(ASTFrame *frame, WriteIndexedNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     setIndexed(frame->self, node->index, value);
     return value;
 }
 
-ObjectPointer evaluate_PrimGetArraySizeNode(Frame *frame, PrimGetArraySizeNode *node) {
+ObjectPointer evaluate_PrimGetArraySizeNode(ASTFrame *frame, PrimGetArraySizeNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     size_t size = getIndexedSize(getObject(frame->objectmemory, value));
     return registerInt(size);
 }
 
-ObjectPointer evaluate_PrimArrayAtNode(Frame *frame, PrimArrayAtNode *node) {
+ObjectPointer evaluate_PrimArrayAtNode(ASTFrame *frame, PrimArrayAtNode *node) {
     Object *obj = getObject(frame->objectmemory, evaluate(frame, node->value));
     return getIndexed(obj, node->index);
 }
 
-ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
+ObjectPointer evaluate_StringNode(ASTFrame *frame, StringNode *node) {
     Class *stringClass = frame->objectmemory->stringClass;
     const char *src = node->value;
     size_t len = strlen(src);
@@ -128,22 +132,22 @@ ObjectPointer evaluate_StringNode(Frame *frame, StringNode *node) {
     return registerObjectWithHash(frame->objectmemory, (Object *) obj, hash);
 }
 
-ObjectPointer evaluate_WriteTempNode(Frame *frame, WriteTempNode *node) {
+ObjectPointer evaluate_WriteTempNode(ASTFrame *frame, WriteTempNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     frame->temps[node->index] = value;
     return value;
 }
 
-ObjectPointer evaluate_ReadTempNode(Frame *frame, ReadTempNode *node) {
+ObjectPointer evaluate_ReadTempNode(ASTFrame *frame, ReadTempNode *node) {
     return frame->temps[node->index];
 }
 
-ObjectPointer evaluate_ReturnNode(Frame *frame, ReturnNode *node) {
+ObjectPointer evaluate_ReturnNode(ASTFrame *frame, ReturnNode *node) {
     ObjectPointer value = evaluate(frame, node->value);
     return value;
 }
 
-ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *node) {
+ObjectPointer evaluate_PrimStringConcatNode(ASTFrame *frame, PrimStringConcatNode *node) {
     Object *leftObject = getObject(frame->objectmemory, evaluate(frame, node->left));
     Object *rightObject = getObject(frame->objectmemory, evaluate(frame, node->right));
     if ((leftObject->class->classNode->indexedType != BYTE_INDEXED) ||
@@ -167,7 +171,7 @@ ObjectPointer evaluate_PrimStringConcatNode(Frame *frame, PrimStringConcatNode *
     return registerObjectWithHash(frame->objectmemory, (Object *) result, hash);
 }
 
-ObjectPointer evaluate_PrimStringInternNode(Frame *frame, PrimStringInternNode *node) {
+ObjectPointer evaluate_PrimStringInternNode(ASTFrame *frame, PrimStringInternNode *node) {
     BytesObject *value = (BytesObject *) getObject(frame->objectmemory, evaluate(frame, node->value));
     uint32_t hash = string_hash(value->bytes, value->size);
     // The "interned" object is always the first object found.
@@ -175,7 +179,7 @@ ObjectPointer evaluate_PrimStringInternNode(Frame *frame, PrimStringInternNode *
 }
 
 
-ObjectPointer evaluate(Frame *frame, Node *node) {
+ObjectPointer evaluate(ASTFrame *frame, Node *node) {
     switch (node->type) {
         case INT_NODE: {
             return registerInt(((IntNode *) node)->value);
@@ -243,29 +247,33 @@ ObjectPointer evaluate(Frame *frame, Node *node) {
     exit(-1);
 }
 
-MethodNode *lookupSelector(Class *class, const char *selector) {
+MethodNode *lookupASTSelector(Class *class, SizedString *selector) {
     MethodNodeArray methods = class->classNode->instSide->methods;
     for (int i = 0; i < methods.size; i++) {
         MethodNode *method = methods.elements[i];
-        if (strcmp(method->selector, selector) == 0) return method;
+        if (sstrcmp(method->selector, selector) == 0) return method;
     }
     if (class->superClass) {
-        return lookupSelector(class->superClass, selector);
+        return lookupASTSelector(class->superClass, selector);
     };
     panic_a("Selector not found", selector);
     exit(-1);
 }
 
-ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, const char *selector, ObjectPointer *arguments) {
-    Object *self = getObject(om, selfp);
-    MethodNode *method = lookupSelector(self->class, selector);
+ObjectPointer ast_perform(ObjectMemory *om, ObjectPointer selfp, char *selector, ObjectPointer *arguments) {
+    return ast_perform_sym(om, selfp, getSizedString(selector), arguments);
+}
 
-    Frame frame;
+ObjectPointer ast_perform_sym(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments) {
+    Object *self = getObject(om, selfp);
+    MethodNode *method = lookupASTSelector(self->class, selector);
+
+    ASTFrame frame;
     frame.self = self;
     frame.selfp = selfp;
     frame.objectmemory = om;
     frame.arguments = arguments;
     frame.temps = calloc(sizeof(ObjectPointer), method->block->temporaries.size);
-    ObjectPointer result = evaluate(&frame, method->block->body);
+    ObjectPointer result = evaluate(&frame, (Node *) method->block->body);
     return result;
 }
