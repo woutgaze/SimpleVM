@@ -169,7 +169,7 @@ typedef struct NodeArray {
 
 struct ArgumentNode {
 	Node super;
-	SizedString * name;
+	SizedString name;
 };
 
 struct ArrayConstructionNode {
@@ -204,7 +204,7 @@ struct IntNode {
 
 struct NaryMessageNode {
 	Node super;
-	SizedString * selector;
+	SizedString selector;
 	Node * receiver;
 	NodeArray arguments;
 };
@@ -323,7 +323,7 @@ struct SequenceNode {
 
 struct StringNode {
 	Node super;
-	SizedString * value;
+	SizedString value;
 };
 
 struct TrueNode {
@@ -332,7 +332,7 @@ struct TrueNode {
 
 struct UnaryMessageNode {
 	Node super;
-	SizedString * selector;
+	SizedString selector;
 	Node * receiver;
 };
 
@@ -369,7 +369,7 @@ struct BlockNode {
 
 struct CompiledMethodNode {
 	Node super;
-	SizedString * selector;
+	SizedString selector;
 	CompiledCodeNode * code;
 };
 
@@ -381,7 +381,7 @@ struct CompiledClassSideNode {
 
 struct MethodNode {
 	Node super;
-	SizedString * selector;
+	SizedString selector;
 	BlockNode * block;
 };
 
@@ -393,8 +393,8 @@ struct ClassSideNode {
 
 struct CompiledClassNode {
 	Node super;
-	SizedString * name;
-	SizedString * superName;
+	SizedString name;
+	SizedString superName;
 	uint32_t indexedType;
 	CompiledClassSideNode * instSide;
 	CompiledClassSideNode * classSide;
@@ -402,14 +402,14 @@ struct CompiledClassNode {
 
 struct ClassNode {
 	Node super;
-	SizedString * name;
-	SizedString * superName;
+	SizedString name;
+	SizedString superName;
 	uint32_t indexedType;
 	ClassSideNode * instSide;
 	ClassSideNode * classSide;
 };
 
-Node *newArgument(SizedString * name);
+Node *newArgument(SizedString name);
 
 Node *newArrayConstruction(Node ** elements, uint32_t elements_size);
 
@@ -421,7 +421,7 @@ Node *newFalse();
 
 Node *newInt(int value);
 
-Node *newNaryMessage(SizedString * selector, Node * receiver, Node ** arguments, uint32_t arguments_size);
+Node *newNaryMessage(SizedString selector, Node * receiver, Node ** arguments, uint32_t arguments_size);
 
 Node *newNil();
 
@@ -465,11 +465,11 @@ Node *newSelf();
 
 Node *newSequence(Node ** statements, uint32_t statements_size);
 
-Node *newString(SizedString * value);
+Node *newString(SizedString value);
 
 Node *newTrue();
 
-Node *newUnaryMessage(SizedString * selector, Node * receiver);
+Node *newUnaryMessage(SizedString selector, Node * receiver);
 
 Node *newWhileTrue(Node * condition, Node * body);
 
@@ -481,17 +481,17 @@ Node *newWriteTemp(uint32_t index, Node * value);
 
 Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, SequenceNode * body);
 
-Node *newCompiledMethod(SizedString * selector, CompiledCodeNode * code);
+Node *newCompiledMethod(SizedString selector, CompiledCodeNode * code);
 
 Node *newCompiledClassSide(ArgumentNode ** instVars, uint32_t instVars_size, CompiledMethodNode ** methods, uint32_t methods_size);
 
-Node *newMethod(SizedString * selector, BlockNode * block);
+Node *newMethod(SizedString selector, BlockNode * block);
 
 Node *newClassSide(ArgumentNode ** instVars, uint32_t instVars_size, MethodNode ** methods, uint32_t methods_size);
 
-Node *newCompiledClass(SizedString * name, SizedString * superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide);
+Node *newCompiledClass(SizedString name, SizedString superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide);
 
-Node *newClass(SizedString * name, SizedString * superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide);
+Node *newClass(SizedString name, SizedString superName, uint32_t indexedType, ClassSideNode * instSide, ClassSideNode * classSide);
 
 
 #endif //SIMPLEVM_ASTNODES_H

@@ -7,7 +7,7 @@
 #include "../ASTNodes.h"
 
 Node *readArgumentNode_V1(FILE *fileptr) {
-    SizedString * name = readString_V1(fileptr);
+    SizedString name = readString_V1(fileptr);
 
     return newArgument(name);
 }
@@ -53,7 +53,7 @@ Node *readIntNode_V1(FILE *fileptr) {
 }
 
 Node *readNaryMessageNode_V1(FILE *fileptr) {
-    SizedString * selector = readString_V1(fileptr);
+    SizedString selector = readString_V1(fileptr);
 
     Node * receiver = (Node *) readNode_V1(fileptr);
 
@@ -203,7 +203,7 @@ Node *readSequenceNode_V1(FILE *fileptr) {
 }
 
 Node *readStringNode_V1(FILE *fileptr) {
-    SizedString * value = readString_V1(fileptr);
+    SizedString value = readString_V1(fileptr);
 
     return newString(value);
 }
@@ -213,7 +213,7 @@ Node *readTrueNode_V1(FILE *fileptr) {
 }
 
 Node *readUnaryMessageNode_V1(FILE *fileptr) {
-    SizedString * selector = readString_V1(fileptr);
+    SizedString selector = readString_V1(fileptr);
 
     Node * receiver = (Node *) readNode_V1(fileptr);
 
@@ -263,7 +263,7 @@ Node *readBlockNode_V1(FILE *fileptr) {
 }
 
 Node *readCompiledMethodNode_V1(FILE *fileptr) {
-    SizedString * selector = readString_V1(fileptr);
+    SizedString selector = readString_V1(fileptr);
 
     CompiledCodeNode * code = (CompiledCodeNode *) readNode_V1(fileptr);
 
@@ -279,7 +279,7 @@ Node *readCompiledClassSideNode_V1(FILE *fileptr) {
 }
 
 Node *readMethodNode_V1(FILE *fileptr) {
-    SizedString * selector = readString_V1(fileptr);
+    SizedString selector = readString_V1(fileptr);
 
     BlockNode * block = (BlockNode *) readNode_V1(fileptr);
 
@@ -295,9 +295,9 @@ Node *readClassSideNode_V1(FILE *fileptr) {
 }
 
 Node *readCompiledClassNode_V1(FILE *fileptr) {
-    SizedString * name = readString_V1(fileptr);
+    SizedString name = readString_V1(fileptr);
 
-    SizedString * superName = readString_V1(fileptr);
+    SizedString superName = readString_V1(fileptr);
 
     uint32_t indexedType = readIndex_V1(fileptr);
 
@@ -309,9 +309,9 @@ Node *readCompiledClassNode_V1(FILE *fileptr) {
 }
 
 Node *readClassNode_V1(FILE *fileptr) {
-    SizedString * name = readString_V1(fileptr);
+    SizedString name = readString_V1(fileptr);
 
-    SizedString * superName = readString_V1(fileptr);
+    SizedString superName = readString_V1(fileptr);
 
     uint32_t indexedType = readIndex_V1(fileptr);
 

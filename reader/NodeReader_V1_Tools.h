@@ -7,10 +7,11 @@
 
 #include <stdio.h>
 #include "../ASTNodes.h"
+#include "../SizedString.h"
 
 Node * readFailed_V1();
 
-SizedString * readString_V1(FILE *fileptr);
+SizedString readString_V1(FILE *fileptr);
 int readInt_V1(FILE *fileptr);
 
 uint16_t readIndex_V1(FILE *fileptr);

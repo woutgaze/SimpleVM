@@ -173,10 +173,6 @@ size_t getIndexedSize(Object *obj) {
     return firstSlot[class->classNode->instSide->instVars.size];
 }
 
-MethodNode *createMethod(SizedString *selector, Node *node) {
-    return (MethodNode *) newMethod(selector, (BlockNode *) newBlock(NULL, 0, NULL, 0, (SequenceNode *) node));
-}
-
 Class *createClassNoRegister(ObjectMemory *om, ClassNode *classNode) {
     if ((classNode->indexedType == BYTE_INDEXED) && (classNode->instSide->instVars.size != 0)) {
         panic("Class cannot be both byte indexed and holding instVars");
@@ -187,7 +183,7 @@ Class *createClassNoRegister(ObjectMemory *om, ClassNode *classNode) {
     return class;
 }
 
-Class *findClass(ObjectMemory *om, SizedString *name) {
+Class *findClass(ObjectMemory *om, SizedString name) {
     for (int i = 0; i < om->classTable.used; i++) {
         Class *class = (Class *) om->classTable.entries[i].object;
         if (sstrcmp(class->classNode->name, name) == 0) return class;

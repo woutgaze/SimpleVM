@@ -14,8 +14,9 @@ ObjectPointer primIntAdd(ObjectPointer left, ObjectPointer right) {
     return registerInt(leftValue + rightValue);
 }
 
-ObjectPointer sendUnaryMessage(const ASTFrame *frame, ObjectPointer receiver, const char *selector) { return ast_perform(
-            frame->objectmemory, receiver, selector, NULL); }
+ObjectPointer sendUnaryMessage(const ASTFrame *frame, ObjectPointer receiver, SizedString selector) {
+   niy();
+}
 
 ObjectPointer evaluate_NaryMessageNode(ASTFrame *frame, NaryMessageNode *node) {
     ObjectPointer receiver = evaluate(frame, node->receiver);
@@ -23,9 +24,10 @@ ObjectPointer evaluate_NaryMessageNode(ASTFrame *frame, NaryMessageNode *node) {
     for (int i = 0; i < node->arguments.size; i++) {
         args[i] = evaluate(frame, node->arguments.elements[i]);
     }
-    ObjectPointer result = ast_perform(frame->objectmemory, receiver, node->selector, args);
+    niy();
+//    ObjectPointer result = ast_perform(frame->objectmemory, receiver, node->selector, args);
     free(args);
-    return result;
+    return NULL;
 }
 
 ObjectPointer evaluate_ReadArgNode(ASTFrame *frame, ReadArgNode *node) {
@@ -114,17 +116,15 @@ ObjectPointer evaluate_PrimArrayAtNode(ASTFrame *frame, PrimArrayAtNode *node) {
 
 ObjectPointer evaluate_StringNode(ASTFrame *frame, StringNode *node) {
     Class *stringClass = frame->objectmemory->stringClass;
-    const char *src = node->value;
-    size_t len = strlen(src);
-    size_t hash = string_hash(src, len);
+    size_t hash = string_hash(node->value.elements, node->value.size);
 
     // String class should never have instVars:
-    BytesObject *obj = malloc(sizeof(BytesObject) + len);
+    BytesObject *obj = malloc(sizeof(BytesObject) + node->value.size);
     obj->class = stringClass;
-    obj->size = len;
-    memcpy(obj->bytes, src, len);
+    obj->size = node->value.size;
+    memcpy(obj->bytes, node->value.elements, node->value.size);
 
-    ObjectPointer current = findObjectMatching(frame->objectmemory, obj, sizeof(BytesObject) + len, hash);
+    ObjectPointer current = findObjectMatching(frame->objectmemory, obj, sizeof(BytesObject) + node->value.size, hash);
     if (current != 0) {
         free(obj);
         return current;
@@ -185,13 +185,15 @@ ObjectPointer evaluate(ASTFrame *frame, Node *node) {
             return registerInt(((IntNode *) node)->value);
         }
         case PRIM_INT_ADD_NODE: {
-            return primIntAdd(evaluate(frame, ((PrimIntAddNode *) node)->left), evaluate(frame, ((PrimIntAddNode *) node)->right));
+            return primIntAdd(evaluate(frame, ((PrimIntAddNode *) node)->left),
+                              evaluate(frame, ((PrimIntAddNode *) node)->right));
         }
         case READ_INST_VAR_NODE: {
             return getInstVar(frame->self, ((ReadInstVarNode *) node)->index);
         }
         case UNARY_MESSAGE_NODE: {
-            return sendUnaryMessage(frame, evaluate(frame, ((UnaryMessageNode *) node)->receiver), ((UnaryMessageNode *) node)->selector);
+            return sendUnaryMessage(frame, evaluate(frame, ((UnaryMessageNode *) node)->receiver),
+                                    ((UnaryMessageNode *) node)->selector);
         }
         case NARY_MESSAGE_NODE:
             return evaluate_NaryMessageNode(frame, (NaryMessageNode *) node);
@@ -247,7 +249,7 @@ ObjectPointer evaluate(ASTFrame *frame, Node *node) {
     exit(-1);
 }
 
-MethodNode *lookupASTSelector(Class *class, SizedString *selector) {
+MethodNode *lookupASTSelector(Class *class, SizedString selector) {
     MethodNodeArray methods = class->classNode->instSide->methods;
     for (int i = 0; i < methods.size; i++) {
         MethodNode *method = methods.elements[i];
@@ -256,15 +258,15 @@ MethodNode *lookupASTSelector(Class *class, SizedString *selector) {
     if (class->superClass) {
         return lookupASTSelector(class->superClass, selector);
     };
-    panic_a("Selector not found", selector);
+    panic_a("Selector not found", getNullTerminatedString(selector));
     exit(-1);
 }
 
-ObjectPointer ast_perform(ObjectMemory *om, ObjectPointer selfp, char *selector, ObjectPointer *arguments) {
+ObjectPointer ast_perform(ObjectMemory *om, ObjectPointer selfp, const char * selector, ObjectPointer *arguments) {
     return ast_perform_sym(om, selfp, getSizedString(selector), arguments);
 }
 
-ObjectPointer ast_perform_sym(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments) {
+ObjectPointer ast_perform_sym(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer *arguments) {
     Object *self = getObject(om, selfp);
     MethodNode *method = lookupASTSelector(self->class, selector);
 

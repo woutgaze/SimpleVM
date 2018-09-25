@@ -29,7 +29,7 @@ typedef struct Process {
     ObjectPointer returnValue;
 } Process;
 
-ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer **arguments);
+ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer **arguments);
 
 
 #endif //SIMPLEVM_BYTECODEINTERPRETER_H

@@ -18,9 +18,9 @@ typedef struct ASTFrame {
 
 ObjectPointer evaluate(ASTFrame *frame, Node *node);
 
-MethodNode *lookupASTSelector(Class *class, SizedString *selector);
+MethodNode *lookupASTSelector(Class *class, SizedString selector);
 
-ObjectPointer ast_perform(ObjectMemory *om, ObjectPointer op, char *selector, ObjectPointer *arguments);
-ObjectPointer ast_perform_sym(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments);
+ObjectPointer ast_perform(ObjectMemory *om, ObjectPointer op, const char * selector, ObjectPointer *arguments);
+ObjectPointer ast_perform_sym(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer *arguments);
 
 #endif //SIMPLEVM_INTERPRETER_H

@@ -12,11 +12,11 @@
 
 typedef struct SizedString {
     size_t size;
-    char elements[];
+    char *elements;
 } SizedString;
 
-SizedString *getSizedString(const char *cstring);
-const char * getNullTerminatedString(SizedString * str);
-int sstrcmp(SizedString * a, SizedString * b);
+SizedString getSizedString(const char *cstring);
+const char * getNullTerminatedString(SizedString str);
+int sstrcmp(SizedString a, SizedString b);
 
 #endif //SIMPLEVM_SIZEDSTRING_H

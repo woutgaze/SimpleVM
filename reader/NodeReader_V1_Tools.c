@@ -13,12 +13,13 @@ Node * readFailed_V1() {
     panic("Read failed");
 }
 
-SizedString * readString_V1(FILE *fileptr){
+SizedString readString_V1(FILE *fileptr){
     uint16_t size;
+    SizedString string;
     if (!fread(&size, sizeof(uint16_t), 1, fileptr) == 1)  readFailed_V1();
-    SizedString * string = (SizedString *) malloc(sizeof(SizedString) + size);
-    if (!fread(string->elements, 1, size, fileptr) == size)  readFailed_V1();
-    string->size = size;
+    string.size = size;
+    string.elements = malloc(size);
+    if (!fread(string.elements, 1, size, fileptr) == size)  readFailed_V1();
     return string;
 }
 

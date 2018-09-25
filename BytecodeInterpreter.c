@@ -7,9 +7,10 @@
 #include "ObjectMemory.h"
 #include "DevTools.h"
 #include "Hashing.h"
+#include "SizedString.h"
 
 
-CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString *selector) {
+CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString selector) {
     CompiledMethodNodeArray methods = class->classNode->instSide->methods;
     for (int i = 0; i < methods.size; i++) {
         CompiledMethodNode *method = methods.elements[i];
@@ -18,11 +19,11 @@ CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString *selector) 
     if (class->superClass) {
         return lookupSelector(class->superClass, selector);
     };
-    panic_a("Selector not found", selector);
+    panic_a("Selector not found", getNullTerminatedString(selector));
     exit(-1);
 }
 
-Frame *createFrame(ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments[], Process *process) {
+Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer *arguments[], Process *process) {
     ObjectMemory *om = process->objectmemory;
     Object *self = getObject(om, selfp);
     CompiledMethodNode *method = lookupSelector((CompiledClass *) self->class, selector);
@@ -55,13 +56,14 @@ int codePop_index(Frame *frame) {
     return *value;
 }
 
-SizedString *codePop_string(Frame *frame) {
+SizedString codePop_string(Frame *frame) {
     int len = codePop_index(frame);
-    SizedString *str = (SizedString *) malloc(sizeof(SizedString) + len);
-    str->size = len;
+    SizedString str;
+    str.elements = malloc(len);
+    str.size = len;
     char *elems = &(frame->code->bytecode.elements[frame->ip]);
     frame->ip = frame->ip + len;
-    memcpy(str->elements, elems, len);
+    memcpy(str.elements, elems, len);
     return str;
 }
 
@@ -105,13 +107,13 @@ ObjectPointer executeReadInstVar(Frame *frame, int index) {
     return getInstVar(frame->self, index);
 }
 
-void executeUnaryMessage(Frame *frame, SizedString *selector, ObjectPointer receiver) {
+void executeUnaryMessage(Frame *frame, SizedString selector, ObjectPointer receiver) {
     Frame *newFrame = createFrame(receiver, selector, NULL, frame->process);
     newFrame->sender = frame;
     frame->process->currentFrame = newFrame;
 }
 
-void executeNaryMessage(Frame *pFrame, SizedString *selector, ObjectPointer receiver, int numArgs) {
+void executeNaryMessage(Frame *pFrame, SizedString selector, ObjectPointer receiver, int numArgs) {
     niy();
 }
 
@@ -174,18 +176,19 @@ ObjectPointer executePrimArrayAt(int index, ObjectPointer object) {
     niy();
 }
 
-ObjectPointer executeString(Frame *frame, SizedString *string) {
+ObjectPointer executeString(Frame *frame, SizedString string) {
     Class *stringClass = frame->process->objectmemory->stringClass;
-    size_t len = string->size;
-    size_t hash = string_hash(string->elements, len);
+    size_t len = string.size;
+    size_t hash = string_hash(string.elements, len);
 
     // String class should never have instVars:
     BytesObject *obj = malloc(sizeof(BytesObject) + len);
     obj->class = stringClass;
     obj->size = len;
-    memcpy(obj->bytes, string->elements, len);
+    memcpy(obj->bytes, string.elements, len);
 
-    free(string);
+    free(string.elements);
+
     ObjectPointer current = findObjectMatching(frame->process->objectmemory, obj, sizeof(BytesObject) + len, hash);
     if (current != 0) {
         free(obj);
@@ -380,7 +383,7 @@ ObjectPointer executeProcess(Process *process) {
     }
 }
 
-ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer **arguments) {
+ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer **arguments) {
     Process *process = (Process *) malloc(sizeof(Process));
     process->objectmemory = om;
     process->currentFrame = NULL;

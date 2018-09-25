@@ -103,9 +103,6 @@ Object *newObject(Class *class, ObjectPointer values[], size_t indexedSize);
 ObjectPointer basicNew(ObjectMemory *om, Class *class);
 ObjectPointer basicNew_sz(ObjectMemory *om, Class *class, size_t indexedSize);
 
-
-MethodNode *createMethod(SizedString *selector, Node *node);
-
 Class *createClass(ObjectMemory *om, size_t instVarSize, MethodNode **methods, size_t methodsSize, int indexingType);
 CompiledClass *createCompiledClass(ObjectMemory *om, size_t instVarSize, CompiledMethodNode **methods, size_t methodsSize, int indexingType);
 CompiledClass *createCompiledClassFromNode(ObjectMemory *om, CompiledClassNode *classNode);
