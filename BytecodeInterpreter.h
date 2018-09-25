@@ -8,9 +8,10 @@
 #include "ObjectMemory.h"
 
 typedef struct Frame Frame;
+typedef struct Process Process;
 
 typedef struct Frame {
-    ObjectMemory *om;
+    Process *process;
     Frame * sender;
     Object *self;
     size_t ip;

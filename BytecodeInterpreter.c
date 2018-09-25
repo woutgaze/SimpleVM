@@ -22,12 +22,13 @@ CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString *selector) 
     exit(-1);
 }
 
-Frame *createFrame(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments[]) {
+Frame *createFrame(ObjectPointer selfp, SizedString *selector, ObjectPointer *arguments[], Process *process) {
+    ObjectMemory *om = process->objectmemory;
     Object *self = getObject(om, selfp);
     CompiledMethodNode *method = lookupSelector((CompiledClass *) self->class, selector);
 
     Frame *frame = malloc(sizeof(Frame));
-    frame->om = om;
+    frame->process = process;
     frame->sender = NULL;
     frame->self = self;
     frame->ip = 0;
@@ -64,8 +65,12 @@ SizedString *codePop_string(Frame *frame) {
     return str;
 }
 
+void stackPushObject(Frame *frame, ObjectPointer value) {
+    frame->stack[frame->sp++] = value;
+}
+
 ObjectPointer stackPop_object(Frame *frame) {
-    return frame->stack[frame->sp++];
+    return frame->stack[--frame->sp];
 }
 
 int stackPop_int(Frame *frame) {
@@ -73,15 +78,11 @@ int stackPop_int(Frame *frame) {
 }
 
 bool stackPop_bool(Frame *frame) {
-    return getBool(frame->om, stackPop_object(frame));
+    return getBool(frame->process->objectmemory, stackPop_object(frame));
 }
 
 int32_t executeInt(int32_t value) {
     return value;
-}
-
-void stackPushObject(Frame *frame, ObjectPointer value) {
-    frame->stack[frame->sp++] = value;
 }
 
 void stackPushInt(Frame *frame, int32_t value) {
@@ -89,7 +90,7 @@ void stackPushInt(Frame *frame, int32_t value) {
 }
 
 void stackPushBool(Frame *frame, bool value) {
-    stackPushObject(frame, getBoolValue(frame->om, value));
+    stackPushObject(frame, getBoolValue(frame->process->objectmemory, value));
 }
 
 char codePop_char(Frame *frame) {
@@ -101,19 +102,21 @@ int32_t executePrimIntAdd(int a, int b) {
 }
 
 ObjectPointer executeReadInstVar(Frame *frame, int index) {
+    return getInstVar(frame->self, index);
+}
+
+void executeUnaryMessage(Frame *frame, SizedString *selector, ObjectPointer receiver) {
+    Frame *newFrame = createFrame(receiver, selector, NULL, frame->process);
+    newFrame->sender = frame;
+    frame->process->currentFrame = newFrame;
+}
+
+void executeNaryMessage(Frame *pFrame, SizedString *selector, ObjectPointer receiver, int numArgs) {
     niy();
 }
 
-ObjectPointer executeUnaryMessage(Frame *pFrame, char *pop_string, ObjectPointer object) {
-    niy();
-}
-
-ObjectPointer executeNaryMessage(Frame *pFrame, char *pop_string, ObjectPointer object, int index) {
-    niy();
-}
-
-ObjectPointer executeSelf(Frame *pFrame) {
-    niy();
+ObjectPointer executeSelf(Frame *frame) {
+    return frame->selfp;
 }
 
 ObjectPointer executeReadArg(Frame *pFrame, int index) {
@@ -141,8 +144,9 @@ bool executePrimIntSmallerThan(int a, int b) {
     return a < b;
 }
 
-ObjectPointer executeWriteInstVar(Frame *pFrame, int index, ObjectPointer object) {
-    return 0;
+ObjectPointer executeWriteInstVar(Frame *frame, int index, ObjectPointer value) {
+    setInstVar(frame->self, index, value);
+    return value;
 }
 
 bool executePrimNot(bool value) {
@@ -170,7 +174,7 @@ ObjectPointer executePrimArrayAt(int index, ObjectPointer object) {
 }
 
 ObjectPointer executeString(Frame *frame, SizedString *string) {
-    Class *stringClass = frame->om->stringClass;
+    Class *stringClass = frame->process->objectmemory->stringClass;
     size_t len = string->size;
     size_t hash = string_hash(string->elements, len);
 
@@ -181,15 +185,12 @@ ObjectPointer executeString(Frame *frame, SizedString *string) {
     memcpy(obj->bytes, string->elements, len);
 
     free(string);
-    ObjectPointer current = findObjectMatching(frame->om, obj, sizeof(BytesObject) + len, hash);
+    ObjectPointer current = findObjectMatching(frame->process->objectmemory, obj, sizeof(BytesObject) + len, hash);
     if (current != 0) {
         free(obj);
         return current;
     }
-    return registerObjectWithHash(frame->om, (Object *) obj, hash);
-
-
-    niy();
+    return registerObjectWithHash(frame->process->objectmemory, (Object *) obj, hash);
 }
 
 ObjectPointer executeReadTemp(Frame *frame, int index) {
@@ -243,8 +244,8 @@ ObjectPointer executeProcess(Process *process) {
         if (frame == NULL) {
             return process->returnValue;
         }
-        uint32_t instructionsSize = frame->code->instructionsSize;
-        if (frame->ip == instructionsSize) {
+        uint32_t bytecodeSize = frame->code->bytecode.size;
+        if (frame->ip >= bytecodeSize) {
             panic("IP past end");
             break;
         }
@@ -263,12 +264,12 @@ ObjectPointer executeProcess(Process *process) {
                 break;
             }
             case UNARY_MESSAGE_NODE: {
-                stackPushObject(frame, executeUnaryMessage(frame, codePop_string(frame), stackPop_object(frame)));
+                executeUnaryMessage(frame, codePop_string(frame), stackPop_object(frame));
                 break;
             }
             case NARY_MESSAGE_NODE: {
-                stackPushObject(frame, executeNaryMessage(frame, codePop_string(frame), stackPop_object(frame),
-                                                          codePop_index(frame)));
+                executeNaryMessage(frame, codePop_string(frame), stackPop_object(frame),
+                                                          codePop_index(frame));
                 break;
             }
             case SELF_NODE: {
@@ -380,11 +381,13 @@ ObjectPointer executeProcess(Process *process) {
 }
 
 ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString *selector, ObjectPointer **arguments) {
-    Frame *frame = createFrame(om, selfp, selector, arguments);
-
     Process *process = (Process *) malloc(sizeof(Process));
-    process->currentFrame = frame;
+    process->objectmemory = om;
+    process->currentFrame = NULL;
     process->returnValue = 0;
+
+    Frame *frame = createFrame(selfp, selector, arguments, process);
+    process->currentFrame = frame;
 
     return executeProcess(process);
 }

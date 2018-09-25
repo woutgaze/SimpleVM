@@ -25,3 +25,10 @@ void assertEquals(int a, int b) {
         exit(-1);
     }
 }
+
+void runTest(const char *label, void (*testFN)()) {
+    printf("Starting %s\n", label);
+    (*testFN)();
+    printf("Done %s\n\n", label);
+}
+

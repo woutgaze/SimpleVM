@@ -10,4 +10,6 @@ void assertTrue(char *description, bool value);
 void assertFalse(char *description, bool value);
 void assertEquals(int a, int b);
 
+void runTest(const char *label, void (*testFN)());
+
 #endif //SIMPLEVM_ASSERTING_H

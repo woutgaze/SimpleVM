@@ -375,58 +375,37 @@ void test_prim_string_concat_intern() {
     assertTrue("Strings are pointer-equal", getBool(om, v));
 }
 
-void test_read_compiled_method_node() {
-    ObjectMemory *om = createObjectMemory();
-    char bytes[] = { 83, 86, 1, 39, 7, 0, 101, 120, 101, 99, 117, 116, 101, 38, 0, 0, 1, 0, 1, 0, 5, 0, 15, 0, 21, 4, 0, 75, 97, 97, 115, 26, 0, 0, 37, 25, 0, 0, 7 };
-
-    CompiledMethodNode *methodNode = (CompiledMethodNode *) readNodeFromBytes(bytes);
-    CompiledMethodNode *methods[] = {methodNode};
-    Class *class = createCompiledClass(om, 2, methods, 1, NONE);
-    ObjectPointer values[] = {om->nilValue, om->nilValue};
-
-
-    ObjectPointer op = createObject(om, class, values, 0);
-    ObjectPointer v = perform(om, op, getSizedString("execute"), NULL);
-    printf("String: %s\n\n", getCString(om, v));
-}
-
-void runTest(const char *label, void (*testFN)()) {
-    printf("Starting %s\n", label);
-    (*testFN)();
-    printf("Done %s\n\n", label);
-}
-
 void run_BasicTests() {
-//    runTest("test_addEntryToObjectTable", test_addEntryToObjectTable);
-//    runTest("test_createObject", test_createObject);
-//    runTest("test_sendmessage", test_sendmessage);
-//    runTest("test_dispatch", test_dispatch);
-//    runTest("test_dispatchWithArguments", test_dispatchWithArguments);
-//    runTest("test_int", test_int);
-//    runTest("test_true", test_true);
-//    runTest("test_false", test_false);
-//    runTest("test_conditional_true", test_conditional_true);
-//    runTest("test_conditional_false", test_conditional_false);
-//    runTest("test_equals", test_equals);
-//    runTest("test_not_equals", test_not_equals);
-//    runTest("test_write_instvar", test_write_instvar);
-//    runTest("test_op_zero_is_nil", test_op_zero_is_nil);
-//    runTest("test_true_not", test_true_not);
-//    runTest("test_false_not", test_false_not);
-//    runTest("test_loop", test_loop);
-//    runTest("test_create_array", test_create_array);
-//    runTest("test_array_construction", test_array_construction);
-//    runTest("test_array_construction_last", test_array_construction_last);
-//    runTest("test_create_string", test_create_string);
-//    runTest("test_read_string_node", test_read_string_node);
-//    runTest("test_read_sequence_node", test_read_sequence_node);
-//    runTest("test_read_method_node", test_read_method_node);
-//    runTest("test_hash_string", test_hash_string);
-//    runTest("test_string_intern", test_string_intern);
-//    runTest("test_prim_string_concat", test_prim_string_concat);
-//    runTest("test_prim_string_concat_intern", test_prim_string_concat_intern);
-//    runTest("test_string_intern_ne", test_string_intern_ne);
-//    runTest("test_true_isNil", test_true_isNil);
-//    runTest("test_nil_isNil", test_nil_isNil);
-    runTest("test_read_compiled_method_node", test_read_compiled_method_node);
+    runTest("test_addEntryToObjectTable", test_addEntryToObjectTable);
+    runTest("test_createObject", test_createObject);
+    runTest("test_sendmessage", test_sendmessage);
+    runTest("test_dispatch", test_dispatch);
+    runTest("test_dispatchWithArguments", test_dispatchWithArguments);
+    runTest("test_int", test_int);
+    runTest("test_true", test_true);
+    runTest("test_false", test_false);
+    runTest("test_conditional_true", test_conditional_true);
+    runTest("test_conditional_false", test_conditional_false);
+    runTest("test_equals", test_equals);
+    runTest("test_not_equals", test_not_equals);
+    runTest("test_write_instvar", test_write_instvar);
+    runTest("test_op_zero_is_nil", test_op_zero_is_nil);
+    runTest("test_true_not", test_true_not);
+    runTest("test_false_not", test_false_not);
+    runTest("test_loop", test_loop);
+    runTest("test_create_array", test_create_array);
+    runTest("test_array_construction", test_array_construction);
+    runTest("test_array_construction_last", test_array_construction_last);
+    runTest("test_create_string", test_create_string);
+    runTest("test_read_string_node", test_read_string_node);
+    runTest("test_read_sequence_node", test_read_sequence_node);
+    runTest("test_read_method_node", test_read_method_node);
+    runTest("test_hash_string", test_hash_string);
+    runTest("test_string_intern", test_string_intern);
+    runTest("test_prim_string_concat", test_prim_string_concat);
+    runTest("test_prim_string_concat_intern", test_prim_string_concat_intern);
+    runTest("test_string_intern_ne", test_string_intern_ne);
+    runTest("test_true_isNil", test_true_isNil);
+    runTest("test_nil_isNil", test_nil_isNil);
+
 }

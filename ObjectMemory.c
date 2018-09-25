@@ -250,6 +250,34 @@ CompiledClass *createCompiledClass(ObjectMemory *om, size_t instVarSize, Compile
     return createCompiledClassFromNode(om, classNode);
 }
 
+ObjectPointer basicNew(ObjectMemory *om, Class *class) {
+    return basicNew_sz(om, class, 0);
+}
+
+ObjectPointer basicNew_sz(ObjectMemory *om, Class *class, size_t indexedSize) {
+    size_t instVarSize = class->classNode->instSide->instVars.size;
+
+    size_t varSize = 0;
+    uint32_t indexedType = class->classNode->indexedType;
+    if ((indexedType == OBJECT_INDEXED)) {
+        varSize = sizeof(size_t) + (sizeof(ObjectPointer) * indexedSize);
+    } else if ((indexedType == BYTE_INDEXED)) {
+        varSize = sizeof(size_t) + indexedSize;
+
+    }
+    Object *obj = (Object *) calloc(1, sizeof(Object) +
+                                       (sizeof(ObjectPointer) * instVarSize) +
+                                       varSize);
+    obj->class = class;
+    for (int i = 0; i < instVarSize; i++) {
+        setInstVar(obj, i, om->nilValue);
+    }
+    if ((indexedType != NONE)) {
+        ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
+        (firstSlot[instVarSize]) = indexedSize;
+    }
+    return registerObject(om, obj);
+}
 
 ObjectPointer createObject(ObjectMemory *om, Class *class, ObjectPointer values[], size_t indexedSize) {
     Object *obj = newObject(class ? class : om->nilClass, values, indexedSize);
