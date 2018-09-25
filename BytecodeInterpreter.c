@@ -123,7 +123,8 @@ ObjectPointer executeReadArg(Frame *pFrame, int index) {
     niy();
 }
 
-void executeReturn(Process *process, Frame *frame, ObjectPointer returnValue) {
+void executeReturn(Frame *frame, ObjectPointer returnValue) {
+    Process *process = frame->process;
     process->currentFrame = frame->sender;
     if (process->currentFrame == NULL) {
         process->returnValue = returnValue;
@@ -268,8 +269,7 @@ ObjectPointer executeProcess(Process *process) {
                 break;
             }
             case NARY_MESSAGE_NODE: {
-                executeNaryMessage(frame, codePop_string(frame), stackPop_object(frame),
-                                                          codePop_index(frame));
+                executeNaryMessage(frame, codePop_string(frame), stackPop_object(frame), codePop_index(frame));
                 break;
             }
             case SELF_NODE: {
@@ -281,7 +281,7 @@ ObjectPointer executeProcess(Process *process) {
                 break;
             }
             case RETURN_NODE: {
-                executeReturn(process, frame, stackPop_object(frame));
+                executeReturn(frame, stackPop_object(frame));
                 break;
             }
             case FALSE_NODE: {
