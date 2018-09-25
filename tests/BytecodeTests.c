@@ -7,6 +7,7 @@
 #include "../reader/NodeReader.h"
 #include "../BytecodeInterpreter.h"
 #include "../testtools/Asserting.h"
+#include "../ImageBuilder.h"
 
 void test_read_compiled_method_node() {
     ObjectMemory *om = createObjectMemory();
@@ -17,11 +18,11 @@ void test_read_compiled_method_node() {
 
     CompiledMethodNode *methodNode = (CompiledMethodNode *) readNodeFromBytes(bytes);
     CompiledMethodNode *methods[] = {methodNode};
-    Class *class = createCompiledClass(om, 2, methods, 1, NONE);
+    Class *class = createClass(om, 2, methods, 1, NONE);
     ObjectPointer values[] = {om->nilValue, om->nilValue};
 
 
-    ObjectPointer op = createObject(om, class, values, 0);
+    ObjectPointer op = basicNew(om, class);
     ObjectPointer v = perform(om, op, getSizedString(sel), NULL);
     printf("String: %s\n\n", getCString(om, v));
 }
@@ -36,12 +37,13 @@ void test_read_compiled_class_node() {
                     99, 117, 108, 97, 116, 101, 7, 40, 0, 0, 0, 0};
 
     CompiledClassNode *cn = (CompiledClassNode *) readNodeFromBytes(bytes);
-    Class *class = createCompiledClassFromNode(om, cn);
+    Class *class = createClassFromNode(om, cn);
     ObjectPointer op = basicNew(om, class);
     ObjectPointer v = perform(om, op, getSizedString("execute"), NULL);
     assertEquals(getInt(v), 22);
 }
 
 void run_BytecodeTests() {
+    runTest("test_read_compiled_method_node", test_read_compiled_method_node);
     runTest("test_read_compiled_class_node", test_read_compiled_class_node);
 }

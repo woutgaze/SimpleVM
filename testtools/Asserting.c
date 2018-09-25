@@ -19,7 +19,7 @@ void assertFalse(char *description, bool value) {
 }
 
 void assertEquals(int a, int b) {
-    if (!(a == b)) {
+    if (a != b) {
         printf("ASSERTION FAILED: %d == %d\n", a, b);
         panic("ASSERTION FAILED");
         exit(-1);

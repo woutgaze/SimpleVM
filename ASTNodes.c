@@ -20,6 +20,15 @@ Node *newArrayConstruction(Node ** elements, uint32_t elements_size) {
     return (Node *) node;
 }
 
+Node *newBinaryMessage(SizedString selector, Node * receiver, Node * arg1) {
+    BinaryMessageNode *node = (BinaryMessageNode *) malloc(sizeof(BinaryMessageNode));
+    node->super.type = BINARY_MESSAGE_NODE;
+    node->selector = selector;
+    node->receiver = receiver;
+    node->arg1 = arg1;
+    return (Node *) node;
+}
+
 Node *newCompiledCode(uint32_t argumentsSize, uint32_t temporariesSize, uint32_t maxStackDepth, uint32_t instructionsSize, char* bytecode, uint32_t bytecode_size) {
     CompiledCodeNode *node = (CompiledCodeNode *) malloc(sizeof(CompiledCodeNode));
     node->super.type = COMPILED_CODE_NODE;
@@ -44,6 +53,13 @@ Node *newConditional(Node * condition, Node * trueBranch, Node * falseBranch) {
 Node *newFalse() {
     FalseNode *node = (FalseNode *) malloc(sizeof(FalseNode));
     node->super.type = FALSE_NODE;
+    return (Node *) node;
+}
+
+Node *newGlobalRead(SizedString name) {
+    GlobalReadNode *node = (GlobalReadNode *) malloc(sizeof(GlobalReadNode));
+    node->super.type = GLOBAL_READ_NODE;
+    node->name = name;
     return (Node *) node;
 }
 
@@ -170,6 +186,13 @@ Node *newPrimStringIntern(Node * value) {
     return (Node *) node;
 }
 
+Node *newPushBlock(Node * block) {
+    PushBlockNode *node = (PushBlockNode *) malloc(sizeof(PushBlockNode));
+    node->super.type = PUSH_BLOCK_NODE;
+    node->block = block;
+    return (Node *) node;
+}
+
 Node *newReadArg(uint32_t index) {
     ReadArgNode *node = (ReadArgNode *) malloc(sizeof(ReadArgNode));
     node->super.type = READ_ARG_NODE;
@@ -188,6 +211,22 @@ Node *newReadInstVar(uint32_t index) {
     ReadInstVarNode *node = (ReadInstVarNode *) malloc(sizeof(ReadInstVarNode));
     node->super.type = READ_INST_VAR_NODE;
     node->index = index;
+    return (Node *) node;
+}
+
+Node *newReadOuterArg(uint32_t index, uint32_t outer) {
+    ReadOuterArgNode *node = (ReadOuterArgNode *) malloc(sizeof(ReadOuterArgNode));
+    node->super.type = READ_OUTER_ARG_NODE;
+    node->index = index;
+    node->outer = outer;
+    return (Node *) node;
+}
+
+Node *newReadOuterTemp(uint32_t index, uint32_t outer) {
+    ReadOuterTempNode *node = (ReadOuterTempNode *) malloc(sizeof(ReadOuterTempNode));
+    node->super.type = READ_OUTER_TEMP_NODE;
+    node->index = index;
+    node->outer = outer;
     return (Node *) node;
 }
 
@@ -226,6 +265,16 @@ Node *newString(SizedString value) {
     return (Node *) node;
 }
 
+Node *newTernaryMessage(SizedString selector, Node * receiver, Node * arg1, Node * arg2) {
+    TernaryMessageNode *node = (TernaryMessageNode *) malloc(sizeof(TernaryMessageNode));
+    node->super.type = TERNARY_MESSAGE_NODE;
+    node->selector = selector;
+    node->receiver = receiver;
+    node->arg1 = arg1;
+    node->arg2 = arg2;
+    return (Node *) node;
+}
+
 Node *newTrue() {
     TrueNode *node = (TrueNode *) malloc(sizeof(TrueNode));
     node->super.type = TRUE_NODE;
@@ -260,6 +309,15 @@ Node *newWriteInstVar(uint32_t index, Node * value) {
     WriteInstVarNode *node = (WriteInstVarNode *) malloc(sizeof(WriteInstVarNode));
     node->super.type = WRITE_INST_VAR_NODE;
     node->index = index;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newWriteOuterTemp(uint32_t index, uint32_t outer, Node * value) {
+    WriteOuterTempNode *node = (WriteOuterTempNode *) malloc(sizeof(WriteOuterTempNode));
+    node->super.type = WRITE_OUTER_TEMP_NODE;
+    node->index = index;
+    node->outer = outer;
     node->value = value;
     return (Node *) node;
 }

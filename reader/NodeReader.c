@@ -10,7 +10,7 @@
 #include "../DevTools.h"
 
 Node *readNodeFile(FILE *fileptr) {
-    if (getc(fileptr) != 'S' || getc(fileptr) != 'V') {
+    if ((getc(fileptr) != 'S') || (getc(fileptr) != 'V')) {
         panic("Unknown header");
     }
     char version = getc(fileptr);
@@ -20,9 +20,9 @@ Node *readNodeFile(FILE *fileptr) {
     panic("Unknown version");
 }
 
-Node *readNodeFromBytes(char *bytes) {
+Node *readNodeFromBytes(const char *bytes) {
     FILE *stream;
-    stream = fmemopen(bytes, -1, "r");
+    stream = fmemopen((char *) bytes, -1, "r");
     Node *node = readNodeFile(stream);
     fclose(stream);
     return node;

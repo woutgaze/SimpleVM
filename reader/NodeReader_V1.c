@@ -18,6 +18,16 @@ Node *readArrayConstructionNode_V1(FILE *fileptr) {
     return newArrayConstruction(elements.elements, elements.size);
 }
 
+Node *readBinaryMessageNode_V1(FILE *fileptr) {
+    SizedString selector = readString_V1(fileptr);
+
+    Node * receiver = (Node *) readNode_V1(fileptr);
+
+    Node * arg1 = (Node *) readNode_V1(fileptr);
+
+    return newBinaryMessage(selector, receiver, arg1);
+}
+
 Node *readCompiledCodeNode_V1(FILE *fileptr) {
     uint32_t argumentsSize = readIndex_V1(fileptr);
 
@@ -44,6 +54,12 @@ Node *readConditionalNode_V1(FILE *fileptr) {
 
 Node *readFalseNode_V1(FILE *fileptr) {
     return newFalse();
+}
+
+Node *readGlobalReadNode_V1(FILE *fileptr) {
+    SizedString name = readString_V1(fileptr);
+
+    return newGlobalRead(name);
 }
 
 Node *readIntNode_V1(FILE *fileptr) {
@@ -162,6 +178,12 @@ Node *readPrimStringInternNode_V1(FILE *fileptr) {
     return newPrimStringIntern(value);
 }
 
+Node *readPushBlockNode_V1(FILE *fileptr) {
+    Node * block = (Node *) readNode_V1(fileptr);
+
+    return newPushBlock(block);
+}
+
 Node *readReadArgNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
@@ -178,6 +200,22 @@ Node *readReadInstVarNode_V1(FILE *fileptr) {
     uint32_t index = readIndex_V1(fileptr);
 
     return newReadInstVar(index);
+}
+
+Node *readReadOuterArgNode_V1(FILE *fileptr) {
+    uint32_t index = readIndex_V1(fileptr);
+
+    uint32_t outer = readIndex_V1(fileptr);
+
+    return newReadOuterArg(index, outer);
+}
+
+Node *readReadOuterTempNode_V1(FILE *fileptr) {
+    uint32_t index = readIndex_V1(fileptr);
+
+    uint32_t outer = readIndex_V1(fileptr);
+
+    return newReadOuterTemp(index, outer);
 }
 
 Node *readReadTempNode_V1(FILE *fileptr) {
@@ -206,6 +244,18 @@ Node *readStringNode_V1(FILE *fileptr) {
     SizedString value = readString_V1(fileptr);
 
     return newString(value);
+}
+
+Node *readTernaryMessageNode_V1(FILE *fileptr) {
+    SizedString selector = readString_V1(fileptr);
+
+    Node * receiver = (Node *) readNode_V1(fileptr);
+
+    Node * arg1 = (Node *) readNode_V1(fileptr);
+
+    Node * arg2 = (Node *) readNode_V1(fileptr);
+
+    return newTernaryMessage(selector, receiver, arg1, arg2);
 }
 
 Node *readTrueNode_V1(FILE *fileptr) {
@@ -242,6 +292,16 @@ Node *readWriteInstVarNode_V1(FILE *fileptr) {
     Node * value = (Node *) readNode_V1(fileptr);
 
     return newWriteInstVar(index, value);
+}
+
+Node *readWriteOuterTempNode_V1(FILE *fileptr) {
+    uint32_t index = readIndex_V1(fileptr);
+
+    uint32_t outer = readIndex_V1(fileptr);
+
+    Node * value = (Node *) readNode_V1(fileptr);
+
+    return newWriteOuterTemp(index, outer, value);
 }
 
 Node *readWriteTempNode_V1(FILE *fileptr) {
@@ -331,12 +391,16 @@ Node *readNode_V1(FILE *fileptr) {
             return readArgumentNode_V1(fileptr);
         case ARRAY_CONSTRUCTION_NODE:
             return readArrayConstructionNode_V1(fileptr);
+        case BINARY_MESSAGE_NODE:
+            return readBinaryMessageNode_V1(fileptr);
         case COMPILED_CODE_NODE:
             return readCompiledCodeNode_V1(fileptr);
         case CONDITIONAL_NODE:
             return readConditionalNode_V1(fileptr);
         case FALSE_NODE:
             return readFalseNode_V1(fileptr);
+        case GLOBAL_READ_NODE:
+            return readGlobalReadNode_V1(fileptr);
         case INT_NODE:
             return readIntNode_V1(fileptr);
         case NARY_MESSAGE_NODE:
@@ -369,12 +433,18 @@ Node *readNode_V1(FILE *fileptr) {
             return readPrimStringConcatNode_V1(fileptr);
         case PRIM_STRING_INTERN_NODE:
             return readPrimStringInternNode_V1(fileptr);
+        case PUSH_BLOCK_NODE:
+            return readPushBlockNode_V1(fileptr);
         case READ_ARG_NODE:
             return readReadArgNode_V1(fileptr);
         case READ_INDEXED_NODE:
             return readReadIndexedNode_V1(fileptr);
         case READ_INST_VAR_NODE:
             return readReadInstVarNode_V1(fileptr);
+        case READ_OUTER_ARG_NODE:
+            return readReadOuterArgNode_V1(fileptr);
+        case READ_OUTER_TEMP_NODE:
+            return readReadOuterTempNode_V1(fileptr);
         case READ_TEMP_NODE:
             return readReadTempNode_V1(fileptr);
         case RETURN_NODE:
@@ -385,6 +455,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readSequenceNode_V1(fileptr);
         case STRING_NODE:
             return readStringNode_V1(fileptr);
+        case TERNARY_MESSAGE_NODE:
+            return readTernaryMessageNode_V1(fileptr);
         case TRUE_NODE:
             return readTrueNode_V1(fileptr);
         case UNARY_MESSAGE_NODE:
@@ -395,6 +467,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readWriteIndexedNode_V1(fileptr);
         case WRITE_INST_VAR_NODE:
             return readWriteInstVarNode_V1(fileptr);
+        case WRITE_OUTER_TEMP_NODE:
+            return readWriteOuterTempNode_V1(fileptr);
         case WRITE_TEMP_NODE:
             return readWriteTempNode_V1(fileptr);
         case BLOCK_NODE:

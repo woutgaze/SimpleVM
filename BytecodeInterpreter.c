@@ -10,7 +10,7 @@
 #include "SizedString.h"
 
 
-CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString selector) {
+CompiledMethodNode *lookupSelector(Class *class, SizedString selector) {
     CompiledMethodNodeArray methods = class->classNode->instSide->methods;
     for (int i = 0; i < methods.size; i++) {
         CompiledMethodNode *method = methods.elements[i];
@@ -23,10 +23,10 @@ CompiledMethodNode *lookupSelector(CompiledClass *class, SizedString selector) {
     exit(-1);
 }
 
-Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer *arguments[], Process *process) {
+Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer arguments[], Process *process) {
     ObjectMemory *om = process->objectmemory;
     Object *self = getObject(om, selfp);
-    CompiledMethodNode *method = lookupSelector((CompiledClass *) self->class, selector);
+    CompiledMethodNode *method = lookupSelector(self->class, selector);
 
     Frame *frame = malloc(sizeof(Frame));
     frame->process = process;
@@ -44,20 +44,20 @@ Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer *arg
 
 int codePop_int(Frame *frame) {
     char *elements = frame->code->bytecode.elements;
-    int32_t *value = &(elements[frame->ip]);
+    int32_t *value = (int32_t *) &(elements[frame->ip]);
     frame->ip = frame->ip + sizeof(int32_t);
     return *value;
 }
 
 int codePop_index(Frame *frame) {
     char *elements = frame->code->bytecode.elements;
-    uint16_t *value = &(elements[frame->ip]);
+    uint16_t *value = (uint16_t *) &(elements[frame->ip]);
     frame->ip = frame->ip + sizeof(uint16_t);
     return *value;
 }
 
 SizedString codePop_string(Frame *frame) {
-    int len = codePop_index(frame);
+    size_t len = codePop_index(frame);
     SizedString str;
     str.elements = malloc(len);
     str.size = len;
@@ -66,6 +66,11 @@ SizedString codePop_string(Frame *frame) {
     memcpy(str.elements, elems, len);
     return str;
 }
+
+Node *codePop_node(Frame *frame) {
+    niy();
+}
+
 
 void stackPushObject(Frame *frame, ObjectPointer value) {
     frame->stack[frame->sp++] = value;
@@ -242,6 +247,35 @@ void executePop(ObjectPointer object) {
     //NOOP
 }
 
+ObjectPointer executePushBlock(Frame *pFrame, Node *pNode) {
+    niy();
+}
+
+ObjectPointer executeReadOuterArg(Frame *pFrame, int index, int pop_index) {
+    niy();
+}
+
+void executeBinaryMessage(Frame *pFrame, SizedString sizedString, ObjectPointer object, ObjectPointer pop_object) {
+    niy();
+}
+
+ObjectPointer executeReadOuterTemp(Frame *pFrame, int index, int pop_index) {
+    niy();
+}
+
+void executeTernaryMessage(Frame *pFrame, SizedString sizedString, ObjectPointer object, ObjectPointer pop_object,
+                           ObjectPointer popObject) {
+    niy();
+}
+
+ObjectPointer executeWriteOuterTemp(Frame *pFrame, int index, int pop_index, ObjectPointer object) {
+    niy();
+}
+
+ObjectPointer executeGlobalRead(Frame *pFrame, SizedString sizedString) {
+    niy();
+}
+
 ObjectPointer executeProcess(Process *process) {
     while (true) {
         Frame *frame = process->currentFrame;
@@ -375,6 +409,36 @@ ObjectPointer executeProcess(Process *process) {
                 executePop(stackPop_object(frame));
                 break;
             }
+            case PUSH_BLOCK_NODE: {
+                stackPushObject(frame, executePushBlock(frame, codePop_node(frame)));
+                break;
+            }
+            case READ_OUTER_ARG_NODE: {
+                stackPushObject(frame, executeReadOuterArg(frame, codePop_index(frame), codePop_index(frame)));
+                break;
+            }
+            case BINARY_MESSAGE_NODE: {
+                executeBinaryMessage(frame, codePop_string(frame), stackPop_object(frame), stackPop_object(frame));
+                break;
+            }
+            case READ_OUTER_TEMP_NODE: {
+                stackPushObject(frame, executeReadOuterTemp(frame, codePop_index(frame), codePop_index(frame)));
+                break;
+            }
+            case TERNARY_MESSAGE_NODE: {
+                executeTernaryMessage(frame, codePop_string(frame), stackPop_object(frame), stackPop_object(frame),
+                                      stackPop_object(frame));
+                break;
+            }
+            case WRITE_OUTER_TEMP_NODE: {
+                stackPushObject(frame, executeWriteOuterTemp(frame, codePop_index(frame), codePop_index(frame),
+                                                             stackPop_object(frame)));
+                break;
+            }
+            case GLOBAL_READ_NODE: {
+                stackPushObject(frame, executeGlobalRead(frame, codePop_string(frame)));
+                break;
+            }
             default: {
                 const char *typeLabel = NODE_LABELS[type];
                 panic_a("Invalid type", typeLabel);
@@ -383,7 +447,7 @@ ObjectPointer executeProcess(Process *process) {
     }
 }
 
-ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer **arguments) {
+ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer arguments[]) {
     Process *process = (Process *) malloc(sizeof(Process));
     process->objectmemory = om;
     process->currentFrame = NULL;

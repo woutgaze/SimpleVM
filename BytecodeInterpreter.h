@@ -18,9 +18,9 @@ typedef struct Frame {
     size_t sp;
     CompiledCodeNode *code;
     ObjectPointer selfp;
-    ObjectPointer **arguments;
-    ObjectPointer **temps;
-    ObjectPointer **stack;
+    ObjectPointer *arguments;
+    ObjectPointer *temps;
+    ObjectPointer *stack;
 } Frame;
 
 typedef struct Process {
@@ -29,7 +29,7 @@ typedef struct Process {
     ObjectPointer returnValue;
 } Process;
 
-ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer **arguments);
+ObjectPointer perform(ObjectMemory *om, ObjectPointer selfp, SizedString selector, ObjectPointer arguments[]);
 
 
 #endif //SIMPLEVM_BYTECODEINTERPRETER_H
