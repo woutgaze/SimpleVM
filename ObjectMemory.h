@@ -14,14 +14,15 @@
 #define BYTE_INDEXED 2
 #define OBJECT_TABLES_BITS 8
 
-typedef struct Class Class;
+typedef struct ClassFormat ClassFormat;
+typedef unsigned int ObjectPointer;
 
 typedef struct Object {
-    Class *class;
+    ClassFormat *class;
 } Object;
 
 typedef struct BytesObject {
-    Class *class;
+    ClassFormat *class;
     size_t size;
     char bytes[];
 } BytesObject;
@@ -30,11 +31,13 @@ typedef struct ObjectTableEntry {
     Object *object;
 } ObjectTableEntry;
 
-typedef struct Class {
-    Object super;
-    CompiledClassNode *classNode;
-    Class *superClass;
-} Class;
+typedef struct ClassFormat {
+    ClassFormat *superClass;
+    ObjectPointer *object;
+    SizedString name;
+    uint32_t indexedType;
+    CompiledClassSideNode *side;
+} ClassFormat;
 
 typedef struct {
     ObjectTableEntry *entries;
@@ -42,18 +45,17 @@ typedef struct {
     size_t size;
 } ObjectTable;
 
-typedef unsigned int ObjectPointer;
 
 typedef struct {
     int objectTableSize;
     ObjectPointer nilValue;
     ObjectPointer trueValue;
     ObjectPointer falseValue;
-    Class *nilClass;
-    Class *arrayClass;
-    Class *stringClass;
-    Class *bytearrayClass;
-    Class *smallintegerClass;
+    ClassFormat *nilClass;
+    ClassFormat *arrayClass;
+    ClassFormat *stringClass;
+    ClassFormat *bytearrayClass;
+    ClassFormat *smallintegerClass;
     size_t nextTableIndex;
     ObjectTable classTable;
     ObjectTable *objectTables;
@@ -72,6 +74,7 @@ Object *getObject(ObjectMemory *om, ObjectPointer op);
 ObjectPointer registerInt(int value);
 
 int getInt(ObjectPointer p);
+
 bool isSmallInteger(ObjectPointer op);
 
 bool getBool(ObjectMemory *om, ObjectPointer p);
@@ -92,22 +95,22 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 
 size_t getIndexedSize(Object *obj);
 
-ObjectPointer basicNew(ObjectMemory *om, Class *class);
+ObjectPointer basicNew(ObjectMemory *om, ClassFormat *class);
 
-ObjectPointer basicNew_sz(ObjectMemory *om, Class *class, size_t indexedSize);
+ObjectPointer basicNew_sz(ObjectMemory *om, ClassFormat *class, size_t indexedSize);
 
-Class *findClass(ObjectMemory *om, SizedString name);
+ClassFormat *findClass(ObjectMemory *om, SizedString name);
 
-Class *createClass(ObjectMemory *om, size_t instVarSize, CompiledMethodNode **methods, size_t methodsSize,
-                   int indexingType);
+ClassFormat *createNonMeta(ObjectMemory *om, SizedString name, SizedString superName, uint32_t indexedType,
+                     CompiledClassSideNode *side);
 
-Class *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode);
+ClassFormat *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode);
 
 void loadClassIfAbsent(ObjectMemory *om, const char *className, const char *bytes);
 
-Class *createClassNoRegister(ObjectMemory *om, CompiledClassNode *classNode);
+ClassFormat *createClassNoRegister(ObjectMemory *om, uint32_t indexedType, CompiledClassSideNode *side);
 
-void registerClass(ObjectMemory *om, Class *class);
+void registerClass(ObjectMemory *om, ClassFormat *class);
 
 ObjectMemory *newObjectMemory();
 

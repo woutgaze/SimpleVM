@@ -13,7 +13,7 @@ void runCoreTest(const char *sel) {
     printf("Starting #%s\n", sel);
 
     ObjectMemory *om = createObjectMemory();
-    Class *class =  findClass(om, getSizedString("CoreTest"));
+    ClassFormat *class =  findClass(om, getSizedString("CoreTest"));
     ObjectPointer runner = basicNew(om, class);
     ObjectPointer v = perform(om, runner, getSizedString(sel), NULL);
     assertTrue("Test should return true: ", getBool(om, v));
