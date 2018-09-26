@@ -72,6 +72,7 @@ Object *getObject(ObjectMemory *om, ObjectPointer op);
 ObjectPointer registerInt(int value);
 
 int getInt(ObjectPointer p);
+bool isSmallInteger(ObjectPointer op);
 
 bool getBool(ObjectMemory *om, ObjectPointer p);
 

@@ -12,6 +12,20 @@ Node *readArgumentNode_V1(FILE *fileptr) {
     return newArgument(name);
 }
 
+Node *readArithmeticLoopNode_V1(FILE *fileptr) {
+    uint32_t varIndex = readIndex_V1(fileptr);
+
+    uint32_t stopIndex = readIndex_V1(fileptr);
+
+    Node * start = (Node *) readNode_V1(fileptr);
+
+    Node * stop = (Node *) readNode_V1(fileptr);
+
+    Node * sequence = (Node *) readNode_V1(fileptr);
+
+    return newArithmeticLoop(varIndex, stopIndex, start, stop, sequence);
+}
+
 Node *readArrayConstructionNode_V1(FILE *fileptr) {
     NodeArray elements = readNodeArray_V1(fileptr);
 
@@ -66,6 +80,20 @@ Node *readIntNode_V1(FILE *fileptr) {
     int value = readInt_V1(fileptr);
 
     return newInt(value);
+}
+
+Node *readJumpFalseNode_V1(FILE *fileptr) {
+    uint32_t offset = readIndex_V1(fileptr);
+
+    Node * value = (Node *) readNode_V1(fileptr);
+
+    return newJumpFalse(offset, value);
+}
+
+Node *readJumpNode_V1(FILE *fileptr) {
+    int offset = readInt_V1(fileptr);
+
+    return newJump(offset);
 }
 
 Node *readNaryMessageNode_V1(FILE *fileptr) {
@@ -140,6 +168,14 @@ Node *readPrimIntRemNode_V1(FILE *fileptr) {
     Node * right = (Node *) readNode_V1(fileptr);
 
     return newPrimIntRem(left, right);
+}
+
+Node *readPrimIntSmallerOrEqualNode_V1(FILE *fileptr) {
+    Node * left = (Node *) readNode_V1(fileptr);
+
+    Node * right = (Node *) readNode_V1(fileptr);
+
+    return newPrimIntSmallerOrEqual(left, right);
 }
 
 Node *readPrimIntSmallerThanNode_V1(FILE *fileptr) {
@@ -234,12 +270,6 @@ Node *readSelfNode_V1(FILE *fileptr) {
     return newSelf();
 }
 
-Node *readSequenceNode_V1(FILE *fileptr) {
-    NodeArray statements = readNodeArray_V1(fileptr);
-
-    return newSequence(statements.elements, statements.size);
-}
-
 Node *readStringNode_V1(FILE *fileptr) {
     SizedString value = readString_V1(fileptr);
 
@@ -312,16 +342,6 @@ Node *readWriteTempNode_V1(FILE *fileptr) {
     return newWriteTemp(index, value);
 }
 
-Node *readBlockNode_V1(FILE *fileptr) {
-    ArgumentNodeArray arguments = readArgumentNodeArray_V1(fileptr);
-
-    ArgumentNodeArray temporaries = readArgumentNodeArray_V1(fileptr);
-
-    SequenceNode * body = (SequenceNode *) readNode_V1(fileptr);
-
-    return newBlock(arguments.elements, arguments.size, temporaries.elements, temporaries.size, body);
-}
-
 Node *readCompiledMethodNode_V1(FILE *fileptr) {
     SizedString selector = readString_V1(fileptr);
 
@@ -330,12 +350,42 @@ Node *readCompiledMethodNode_V1(FILE *fileptr) {
     return newCompiledMethod(selector, code);
 }
 
+Node *readSequenceNode_V1(FILE *fileptr) {
+    ArgumentNodeArray temporaries = readArgumentNodeArray_V1(fileptr);
+
+    NodeArray statements = readNodeArray_V1(fileptr);
+
+    return newSequence(temporaries.elements, temporaries.size, statements.elements, statements.size);
+}
+
+Node *readBlockNode_V1(FILE *fileptr) {
+    ArgumentNodeArray arguments = readArgumentNodeArray_V1(fileptr);
+
+    SequenceNode * body = (SequenceNode *) readNode_V1(fileptr);
+
+    return newBlock(arguments.elements, arguments.size, body);
+}
+
 Node *readCompiledClassSideNode_V1(FILE *fileptr) {
     ArgumentNodeArray instVars = readArgumentNodeArray_V1(fileptr);
 
     CompiledMethodNodeArray methods = readCompiledMethodNodeArray_V1(fileptr);
 
     return newCompiledClassSide(instVars.elements, instVars.size, methods.elements, methods.size);
+}
+
+Node *readCompiledClassNode_V1(FILE *fileptr) {
+    SizedString name = readString_V1(fileptr);
+
+    SizedString superName = readString_V1(fileptr);
+
+    uint32_t indexedType = readIndex_V1(fileptr);
+
+    CompiledClassSideNode * instSide = (CompiledClassSideNode *) readNode_V1(fileptr);
+
+    CompiledClassSideNode * classSide = (CompiledClassSideNode *) readNode_V1(fileptr);
+
+    return newCompiledClass(name, superName, indexedType, instSide, classSide);
 }
 
 Node *readMethodNode_V1(FILE *fileptr) {
@@ -352,20 +402,6 @@ Node *readClassSideNode_V1(FILE *fileptr) {
     MethodNodeArray methods = readMethodNodeArray_V1(fileptr);
 
     return newClassSide(instVars.elements, instVars.size, methods.elements, methods.size);
-}
-
-Node *readCompiledClassNode_V1(FILE *fileptr) {
-    SizedString name = readString_V1(fileptr);
-
-    SizedString superName = readString_V1(fileptr);
-
-    uint32_t indexedType = readIndex_V1(fileptr);
-
-    CompiledClassSideNode * instSide = (CompiledClassSideNode *) readNode_V1(fileptr);
-
-    CompiledClassSideNode * classSide = (CompiledClassSideNode *) readNode_V1(fileptr);
-
-    return newCompiledClass(name, superName, indexedType, instSide, classSide);
 }
 
 Node *readClassNode_V1(FILE *fileptr) {
@@ -389,6 +425,8 @@ Node *readNode_V1(FILE *fileptr) {
 
         case ARGUMENT_NODE:
             return readArgumentNode_V1(fileptr);
+        case ARITHMETIC_LOOP_NODE:
+            return readArithmeticLoopNode_V1(fileptr);
         case ARRAY_CONSTRUCTION_NODE:
             return readArrayConstructionNode_V1(fileptr);
         case BINARY_MESSAGE_NODE:
@@ -403,6 +441,10 @@ Node *readNode_V1(FILE *fileptr) {
             return readGlobalReadNode_V1(fileptr);
         case INT_NODE:
             return readIntNode_V1(fileptr);
+        case JUMP_FALSE_NODE:
+            return readJumpFalseNode_V1(fileptr);
+        case JUMP_NODE:
+            return readJumpNode_V1(fileptr);
         case NARY_MESSAGE_NODE:
             return readNaryMessageNode_V1(fileptr);
         case NIL_NODE:
@@ -423,6 +465,8 @@ Node *readNode_V1(FILE *fileptr) {
             return readPrimIntMulNode_V1(fileptr);
         case PRIM_INT_REM_NODE:
             return readPrimIntRemNode_V1(fileptr);
+        case PRIM_INT_SMALLER_OR_EQUAL_NODE:
+            return readPrimIntSmallerOrEqualNode_V1(fileptr);
         case PRIM_INT_SMALLER_THAN_NODE:
             return readPrimIntSmallerThanNode_V1(fileptr);
         case PRIM_INT_SUB_NODE:
@@ -451,8 +495,6 @@ Node *readNode_V1(FILE *fileptr) {
             return readReturnNode_V1(fileptr);
         case SELF_NODE:
             return readSelfNode_V1(fileptr);
-        case SEQUENCE_NODE:
-            return readSequenceNode_V1(fileptr);
         case STRING_NODE:
             return readStringNode_V1(fileptr);
         case TERNARY_MESSAGE_NODE:
@@ -471,18 +513,20 @@ Node *readNode_V1(FILE *fileptr) {
             return readWriteOuterTempNode_V1(fileptr);
         case WRITE_TEMP_NODE:
             return readWriteTempNode_V1(fileptr);
-        case BLOCK_NODE:
-            return readBlockNode_V1(fileptr);
         case COMPILED_METHOD_NODE:
             return readCompiledMethodNode_V1(fileptr);
+        case SEQUENCE_NODE:
+            return readSequenceNode_V1(fileptr);
+        case BLOCK_NODE:
+            return readBlockNode_V1(fileptr);
         case COMPILED_CLASS_SIDE_NODE:
             return readCompiledClassSideNode_V1(fileptr);
+        case COMPILED_CLASS_NODE:
+            return readCompiledClassNode_V1(fileptr);
         case METHOD_NODE:
             return readMethodNode_V1(fileptr);
         case CLASS_SIDE_NODE:
             return readClassSideNode_V1(fileptr);
-        case COMPILED_CLASS_NODE:
-            return readCompiledClassNode_V1(fileptr);
         case CLASS_NODE:
             return readClassNode_V1(fileptr);
     }

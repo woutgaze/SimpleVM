@@ -12,6 +12,17 @@ Node *newArgument(SizedString name) {
     return (Node *) node;
 }
 
+Node *newArithmeticLoop(uint32_t varIndex, uint32_t stopIndex, Node * start, Node * stop, Node * sequence) {
+    ArithmeticLoopNode *node = (ArithmeticLoopNode *) malloc(sizeof(ArithmeticLoopNode));
+    node->super.type = ARITHMETIC_LOOP_NODE;
+    node->varIndex = varIndex;
+    node->stopIndex = stopIndex;
+    node->start = start;
+    node->stop = stop;
+    node->sequence = sequence;
+    return (Node *) node;
+}
+
 Node *newArrayConstruction(Node ** elements, uint32_t elements_size) {
     ArrayConstructionNode *node = (ArrayConstructionNode *) malloc(sizeof(ArrayConstructionNode));
     node->super.type = ARRAY_CONSTRUCTION_NODE;
@@ -67,6 +78,21 @@ Node *newInt(int value) {
     IntNode *node = (IntNode *) malloc(sizeof(IntNode));
     node->super.type = INT_NODE;
     node->value = value;
+    return (Node *) node;
+}
+
+Node *newJumpFalse(uint32_t offset, Node * value) {
+    JumpFalseNode *node = (JumpFalseNode *) malloc(sizeof(JumpFalseNode));
+    node->super.type = JUMP_FALSE_NODE;
+    node->offset = offset;
+    node->value = value;
+    return (Node *) node;
+}
+
+Node *newJump(int offset) {
+    JumpNode *node = (JumpNode *) malloc(sizeof(JumpNode));
+    node->super.type = JUMP_NODE;
+    node->offset = offset;
     return (Node *) node;
 }
 
@@ -143,6 +169,14 @@ Node *newPrimIntMul(Node * left, Node * right) {
 Node *newPrimIntRem(Node * left, Node * right) {
     PrimIntRemNode *node = (PrimIntRemNode *) malloc(sizeof(PrimIntRemNode));
     node->super.type = PRIM_INT_REM_NODE;
+    node->left = left;
+    node->right = right;
+    return (Node *) node;
+}
+
+Node *newPrimIntSmallerOrEqual(Node * left, Node * right) {
+    PrimIntSmallerOrEqualNode *node = (PrimIntSmallerOrEqualNode *) malloc(sizeof(PrimIntSmallerOrEqualNode));
+    node->super.type = PRIM_INT_SMALLER_OR_EQUAL_NODE;
     node->left = left;
     node->right = right;
     return (Node *) node;
@@ -250,14 +284,6 @@ Node *newSelf() {
     return (Node *) node;
 }
 
-Node *newSequence(Node ** statements, uint32_t statements_size) {
-    SequenceNode *node = (SequenceNode *) malloc(sizeof(SequenceNode));
-    node->super.type = SEQUENCE_NODE;
-    node->statements.elements = statements;
-    node->statements.size = statements_size;
-    return (Node *) node;
-}
-
 Node *newString(SizedString value) {
     StringNode *node = (StringNode *) malloc(sizeof(StringNode));
     node->super.type = STRING_NODE;
@@ -330,22 +356,30 @@ Node *newWriteTemp(uint32_t index, Node * value) {
     return (Node *) node;
 }
 
-Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, ArgumentNode ** temporaries, uint32_t temporaries_size, SequenceNode * body) {
-    BlockNode *node = (BlockNode *) malloc(sizeof(BlockNode));
-    node->super.type = BLOCK_NODE;
-    node->arguments.elements = arguments;
-    node->arguments.size = arguments_size;
-    node->temporaries.elements = temporaries;
-    node->temporaries.size = temporaries_size;
-    node->body = body;
-    return (Node *) node;
-}
-
 Node *newCompiledMethod(SizedString selector, CompiledCodeNode * code) {
     CompiledMethodNode *node = (CompiledMethodNode *) malloc(sizeof(CompiledMethodNode));
     node->super.type = COMPILED_METHOD_NODE;
     node->selector = selector;
     node->code = code;
+    return (Node *) node;
+}
+
+Node *newSequence(ArgumentNode ** temporaries, uint32_t temporaries_size, Node ** statements, uint32_t statements_size) {
+    SequenceNode *node = (SequenceNode *) malloc(sizeof(SequenceNode));
+    node->super.type = SEQUENCE_NODE;
+    node->temporaries.elements = temporaries;
+    node->temporaries.size = temporaries_size;
+    node->statements.elements = statements;
+    node->statements.size = statements_size;
+    return (Node *) node;
+}
+
+Node *newBlock(ArgumentNode ** arguments, uint32_t arguments_size, SequenceNode * body) {
+    BlockNode *node = (BlockNode *) malloc(sizeof(BlockNode));
+    node->super.type = BLOCK_NODE;
+    node->arguments.elements = arguments;
+    node->arguments.size = arguments_size;
+    node->body = body;
     return (Node *) node;
 }
 
@@ -356,6 +390,17 @@ Node *newCompiledClassSide(ArgumentNode ** instVars, uint32_t instVars_size, Com
     node->instVars.size = instVars_size;
     node->methods.elements = methods;
     node->methods.size = methods_size;
+    return (Node *) node;
+}
+
+Node *newCompiledClass(SizedString name, SizedString superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide) {
+    CompiledClassNode *node = (CompiledClassNode *) malloc(sizeof(CompiledClassNode));
+    node->super.type = COMPILED_CLASS_NODE;
+    node->name = name;
+    node->superName = superName;
+    node->indexedType = indexedType;
+    node->instSide = instSide;
+    node->classSide = classSide;
     return (Node *) node;
 }
 
@@ -374,17 +419,6 @@ Node *newClassSide(ArgumentNode ** instVars, uint32_t instVars_size, MethodNode 
     node->instVars.size = instVars_size;
     node->methods.elements = methods;
     node->methods.size = methods_size;
-    return (Node *) node;
-}
-
-Node *newCompiledClass(SizedString name, SizedString superName, uint32_t indexedType, CompiledClassSideNode * instSide, CompiledClassSideNode * classSide) {
-    CompiledClassNode *node = (CompiledClassNode *) malloc(sizeof(CompiledClassNode));
-    node->super.type = COMPILED_CLASS_NODE;
-    node->name = name;
-    node->superName = superName;
-    node->indexedType = indexedType;
-    node->instSide = instSide;
-    node->classSide = classSide;
     return (Node *) node;
 }
 

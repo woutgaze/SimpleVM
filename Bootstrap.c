@@ -33,5 +33,7 @@ void loadClassesIntoObjectMemory(ObjectMemory * om) {
     loadClassIfAbsent(om, "Stream", B_STREAM);
     loadClassIfAbsent(om, "PositionableStream", B_POSITIONABLESTREAM);
     loadClassIfAbsent(om, "ReadStream", B_READSTREAM);
+    loadClassIfAbsent(om, "TestCase", B_TESTCASE);
+    loadClassIfAbsent(om, "CoreTest", B_CORETEST);
     loadClassIfAbsent(om, "UndefinedObject", B_UNDEFINEDOBJECT);
 }

@@ -5,10 +5,10 @@
 #include <stdbool.h>
 #include <string.h>
 
-static const unsigned int INTMASK = 1 << ((sizeof(ObjectPointer) * 8) - 1);
-static const unsigned int INT_SIGN_MASK = 1 << ((sizeof(ObjectPointer) * 8) - 2);
-static const unsigned int MAX_OBJECT_TABLES = 1 << OBJECT_TABLES_BITS;
-static const unsigned int OBJECT_TABLES_MASK = (1 << OBJECT_TABLES_BITS) - 1;
+const unsigned int INTMASK = 1 << ((sizeof(ObjectPointer) * 8) - 1);
+const unsigned int INT_SIGN_MASK = 1 << ((sizeof(ObjectPointer) * 8) - 2);
+const unsigned int MAX_OBJECT_TABLES = 1 << OBJECT_TABLES_BITS;
+const unsigned int OBJECT_TABLES_MASK = (1 << OBJECT_TABLES_BITS) - 1;
 
 void resizeObjectTable(ObjectTable *objectTable, int toAlloc);
 
@@ -68,8 +68,12 @@ ObjectPointer getBoolValue(ObjectMemory *om, bool test) {
 }
 
 
+bool isSmallInteger(ObjectPointer op) {
+    return INTMASK & op;
+}
+
 Object *getObject(ObjectMemory *om, ObjectPointer op) {
-    if (INTMASK & op) {
+    if (isSmallInteger(op)) {
         panic("ObjectPointer is immediate");
     }
     size_t tables_index = op & OBJECT_TABLES_MASK;
@@ -85,7 +89,7 @@ ObjectPointer registerInt(int value) {
 }
 
 int getInt(ObjectPointer p) {
-    if (!(INTMASK & p)) {
+    if (!(isSmallInteger(p))) {
         panic("ObjectPointer is not immediate int");
     }
     if (INT_SIGN_MASK & p) {

@@ -25,8 +25,16 @@ CompiledMethodNode *lookupSelector(Class *class, SizedString selector) {
 
 Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer arguments[], Process *process) {
     ObjectMemory *om = process->objectmemory;
-    Object *self = getObject(om, selfp);
-    CompiledMethodNode *method = lookupSelector(self->class, selector);
+    Object *self;
+    Class *selfClass;
+    if (isSmallInteger(selfp)) {
+        self = NULL;
+        selfClass = om->smallintegerClass;
+    } else {
+        self = getObject(om, selfp);
+        selfClass = self->class;
+    }
+    CompiledMethodNode *method = lookupSelector(selfClass, selector);
 
     Frame *frame = malloc(sizeof(Frame));
     frame->process = process;
@@ -112,10 +120,28 @@ ObjectPointer executeReadInstVar(Frame *frame, int index) {
     return getInstVar(frame->self, index);
 }
 
-void executeUnaryMessage(Frame *frame, SizedString selector, ObjectPointer receiver) {
-    Frame *newFrame = createFrame(receiver, selector, NULL, frame->process);
+void executeMessage(Frame *frame, SizedString selector, ObjectPointer receiver, ObjectPointer *arguments) {
+    Frame *newFrame = createFrame(receiver, selector, arguments, frame->process);
     newFrame->sender = frame;
     frame->process->currentFrame = newFrame;
+}
+
+void executeUnaryMessage(Frame *frame, SizedString selector, ObjectPointer receiver) {
+    executeMessage(frame, selector, receiver, NULL);
+}
+
+void executeBinaryMessage(Frame *frame, SizedString selector, ObjectPointer receiver, ObjectPointer arg1) {
+    ObjectPointer *arguments = malloc(sizeof(ObjectPointer));
+    arguments[0] = arg1;
+    executeMessage(frame, selector, receiver, arguments);
+}
+
+void executeTernaryMessage(Frame *frame, SizedString selector, ObjectPointer receiver, ObjectPointer arg1,
+                           ObjectPointer arg2) {
+    ObjectPointer *arguments = malloc(sizeof(ObjectPointer) * 2);
+    arguments[0] = arg1;
+    arguments[1] = arg2;
+    executeMessage(frame, selector, receiver, arguments);
 }
 
 void executeNaryMessage(Frame *pFrame, SizedString selector, ObjectPointer receiver, int numArgs) {
@@ -126,8 +152,8 @@ ObjectPointer executeSelf(Frame *frame) {
     return frame->selfp;
 }
 
-ObjectPointer executeReadArg(Frame *pFrame, int index) {
-    niy();
+ObjectPointer executeReadArg(Frame *frame, int index) {
+    return frame->arguments[index];
 }
 
 void executeReturn(Frame *frame, ObjectPointer returnValue) {
@@ -173,8 +199,9 @@ ObjectPointer executeWriteIndexed(Frame *pFrame, int index, ObjectPointer object
     niy();
 }
 
-int32_t executePrimGetArraySize(ObjectPointer object) {
-    niy();
+int32_t executePrimGetArraySize(Frame *frame, ObjectPointer value) {
+    size_t size = getIndexedSize(getObject(frame->process->objectmemory, value));
+    return size;
 }
 
 ObjectPointer executePrimArrayAt(int index, ObjectPointer object) {
@@ -255,16 +282,7 @@ ObjectPointer executeReadOuterArg(Frame *pFrame, int index, int pop_index) {
     niy();
 }
 
-void executeBinaryMessage(Frame *pFrame, SizedString sizedString, ObjectPointer object, ObjectPointer pop_object) {
-    niy();
-}
-
 ObjectPointer executeReadOuterTemp(Frame *pFrame, int index, int pop_index) {
-    niy();
-}
-
-void executeTernaryMessage(Frame *pFrame, SizedString sizedString, ObjectPointer object, ObjectPointer pop_object,
-                           ObjectPointer popObject) {
     niy();
 }
 
@@ -274,6 +292,20 @@ ObjectPointer executeWriteOuterTemp(Frame *pFrame, int index, int pop_index, Obj
 
 ObjectPointer executeGlobalRead(Frame *pFrame, SizedString sizedString) {
     niy();
+}
+
+void executeJumpFalse(Frame *frame, int index, bool test) {
+    if (!test) {
+        frame->ip += index;
+    }
+}
+
+void executeJump(Frame *frame, int index) {
+    frame->ip += index;
+}
+
+bool executePrimIntSmallerOrEqual(int a, int b) {
+    return a <= b;
 }
 
 ObjectPointer executeProcess(Process *process) {
@@ -354,7 +386,7 @@ ObjectPointer executeProcess(Process *process) {
                 break;
             }
             case PRIM_GET_ARRAY_SIZE_NODE: {
-                stackPushInt(frame, executePrimGetArraySize(stackPop_object(frame)));
+                stackPushInt(frame, executePrimGetArraySize(frame, stackPop_object(frame)));
                 break;
             }
             case PRIM_ARRAY_AT_NODE: {
@@ -437,6 +469,18 @@ ObjectPointer executeProcess(Process *process) {
             }
             case GLOBAL_READ_NODE: {
                 stackPushObject(frame, executeGlobalRead(frame, codePop_string(frame)));
+                break;
+            }
+            case JUMP_FALSE_NODE: {
+                executeJumpFalse(frame, codePop_index(frame), stackPop_bool(frame));
+                break;
+            }
+            case JUMP_NODE: {
+                executeJump(frame, codePop_int(frame));
+                break;
+            }
+            case PRIM_INT_SMALLER_OR_EQUAL_NODE: {
+                stackPushBool(frame, executePrimIntSmallerOrEqual(stackPop_int(frame), stackPop_int(frame)));
                 break;
             }
             default: {
