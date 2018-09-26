@@ -105,22 +105,30 @@ bool getBool(ObjectMemory *om, ObjectPointer p) {
     panic("ObjectPointer is not a boolean");
 }
 
+uint32_t getIndexedType(Behavior *class) {
+    return getInt(class->format) >> 12;
+}
+
+uint32_t getInstSize(Behavior *class) {
+    return getInt(class->format) & 0xFFF;
+}
+
 char *getCString(ObjectMemory *om, ObjectPointer p) {
     Object *obj = getObject(om, p);
-    ClassFormat *class = obj->class;
-    uint32_t indexedType = class->indexedType;
+    Behavior *class = obj->class;
+    uint32_t indexedType = getIndexedType(class);
     if (indexedType != BYTE_INDEXED) {
         panic("Object is not byte indexed");
     }
 
-    size_t instVarsSize = class->side->instVars.size;
+    size_t instVarsSize = getInstSize(class);
     size_t offset = sizeof(Object) +
                     (sizeof(ObjectPointer) * instVarsSize) + sizeof(size_t);
     char *src = ((char *) obj) + offset;
 
 
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t size = firstSlot[class->side->instVars.size];
+    size_t size = firstSlot[instVarsSize];
     char *string = malloc(size + 1);
     memcpy(string, src, size);
     string[size] = 0;
@@ -138,30 +146,30 @@ void setInstVar(Object *obj, int instVarIndex, ObjectPointer a) {
 }
 
 ObjectPointer getIndexed(Object *obj, size_t index) {
-    ClassFormat *class = obj->class;
-    uint32_t indexedType = class->indexedType;
+    Behavior *class = obj->class;
+    uint32_t indexedType = getIndexedType(class);
     if (!(indexedType == OBJECT_INDEXED)) {
         panic("Not indexable");
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t indexedSize = firstSlot[class->side->instVars.size];
+    size_t indexedSize = firstSlot[getInstSize(class)];
     if (index >= indexedSize) {
         panic("Index out of bounds");
     }
-    return (firstSlot[class->side->instVars.size + 1 + index]);
+    return (firstSlot[getInstSize(class) + 1 + index]);
 }
 
 void setIndexed(Object *obj, size_t index, ObjectPointer a) {
-    ClassFormat *class = obj->class;
-    if (!(class->indexedType == OBJECT_INDEXED)) {
+    Behavior *class = obj->class;
+    if (!(getIndexedType(class) == OBJECT_INDEXED)) {
         panic("Not indexable");
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    size_t indexedSize = firstSlot[class->side->instVars.size];
+    size_t indexedSize = firstSlot[getInstSize(class)];
     if (index >= indexedSize) {
         panic("Index out of bounds");
     }
-    firstSlot[class->side->instVars.size + 1 + index] = a;
+    firstSlot[getInstSize(class) + 1 + index] = a;
 }
 
 void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPointer a) {
@@ -171,43 +179,56 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 }
 
 size_t getIndexedSize(Object *obj) {
-    ClassFormat *class = obj->class;
-    if ((class->indexedType == NONE)) {
+    Behavior *class = obj->class;
+    if ((getIndexedType(class) == NONE)) {
         panic("Not indexable");
     }
     ObjectPointer *firstSlot = (ObjectPointer *) (obj + 1);
-    return firstSlot[class->side->instVars.size];
+    return firstSlot[getInstSize(class)];
 }
 
-ClassFormat *findClass(ObjectMemory *om, SizedString name) {
-    for (int i = 0; i < om->classTable.used; i++) {
-        ClassFormat *class = (ClassFormat *) om->classTable.entries[i].object;
-        if (sstrcmp(class->name, name) == 0) return class;
+Behavior *findClass(ObjectMemory *om, ObjectPointer name) {
+    for (int i = 0; i < om->classFormatTable.used; i++) {
+        Class *class = (Class *) om->classFormatTable.entries[i].object;
+        if (class->name == name) return (Behavior *) class;
     };
     return NULL;
 }
 
-void registerClass(ObjectMemory *om, ClassFormat *class) {
-    registerObjectInTable(&om->classTable, (Object *) class);
+void registerClass(ObjectMemory *om, Behavior *class) {
+    registerObjectInTable(&om->classFormatTable, (Object *) class);
 }
 
-ClassFormat *createClassNoRegister(ObjectMemory *om, uint32_t indexedType, CompiledClassSideNode *side) {
+Behavior *createClassNoRegister(ObjectMemory *om, uint32_t indexedType, CompiledClassSideNode *side) {
     if ((indexedType == BYTE_INDEXED) && (side->instVars.size != 0)) {
         panic("Class cannot be both byte indexed and holding instVars");
     }
-    ClassFormat *class = (ClassFormat *) malloc(sizeof(ClassFormat));
-    class->object = 0;
-    class->indexedType = indexedType;
+    Class *class = (Class *) malloc(sizeof(Class));
+    class->class = NULL;
+    class->superClass = 0;
+    class->methodDict = 0;
+    class->format = 0;
+    class->subclasses = 0;
+    class->name = 0;
+    getIndexedType(class) = indexedType;
     class->side = side;
     class->name.size = 0;
     class->name.elements = NULL;
+
+    Behavior *class;
+    ObjectPointer superClass;
+    ObjectPointer methodDict;
+    ObjectPointer format;
+    ObjectPointer subclasses;
+    ObjectPointer name;
+
     return class;
 }
 
 
-ClassFormat *createNonMeta(ObjectMemory *om, SizedString name, SizedString superName, uint32_t indexedType,
+Behavior *createNonMeta(ObjectMemory *om, SizedString name, SizedString superName, uint32_t indexedType,
                      CompiledClassSideNode *side) {
-    ClassFormat *class = createClassNoRegister(om, indexedType, side);
+    Behavior *class = createClassNoRegister(om, indexedType, side);
     class->name = name;
 
     registerClass(om, class);
@@ -216,21 +237,21 @@ ClassFormat *createNonMeta(ObjectMemory *om, SizedString name, SizedString super
     return class;
 }
 
-ClassFormat *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode) {
+Behavior *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode) {
 
     return createNonMeta(om, classNode->name, classNode->superName, classNode->indexedType, classNode->instSide);
 
 }
 
-ObjectPointer basicNew(ObjectMemory *om, ClassFormat *class) {
+ObjectPointer basicNew(ObjectMemory *om, Behavior *class) {
     return basicNew_sz(om, class, 0);
 }
 
-ObjectPointer basicNew_sz(ObjectMemory *om, ClassFormat *class, size_t indexedSize) {
-    size_t instVarSize = class->side->instVars.size;
+ObjectPointer basicNew_sz(ObjectMemory *om, Behavior *class, size_t indexedSize) {
+    size_t instVarSize = getInstSize(class);
 
     size_t varSize = 0;
-    uint32_t indexedType = class->indexedType;
+    uint32_t indexedType = getIndexedType(class);
     if ((indexedType == OBJECT_INDEXED)) {
         varSize = sizeof(size_t) + (sizeof(ObjectPointer) * indexedSize);
     } else if ((indexedType == BYTE_INDEXED)) {
@@ -252,7 +273,7 @@ ObjectPointer basicNew_sz(ObjectMemory *om, ClassFormat *class, size_t indexedSi
 }
 
 void loadClassIfAbsent(ObjectMemory *om, const char *className, const char *bytes) {
-    ClassFormat *current = findClass(om, getSizedString(className));
+    Behavior *current = findClass(om, getSizedString(className));
     if (current == NULL) {
         createClassFromNode(om, (CompiledClassNode *) readNodeFromBytes(bytes));
     }
@@ -271,6 +292,6 @@ ObjectMemory *newObjectMemory() {
     for (int i = 0; i < MAX_OBJECT_TABLES; i++) {
         initializeObjectTable(&om->objectTables[i]);
     }
-    initializeObjectTable(&om->classTable);
+    initializeObjectTable(&om->classFormatTable);
     return om;
 }

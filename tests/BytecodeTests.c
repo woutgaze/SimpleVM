@@ -19,7 +19,7 @@ void test_read_compiled_class_node() {
                     99, 117, 108, 97, 116, 101, 7, 40, 0, 0, 0, 0};
 
     CompiledClassNode *cn = (CompiledClassNode *) readNodeFromBytes(bytes);
-    ClassFormat *class = createClassFromNode(om, cn);
+    Behavior *class = createClassFromNode(om, cn);
     ObjectPointer op = basicNew(om, class);
     ObjectPointer v = perform(om, op, getSizedString("execute"), NULL);
     assertEquals(getInt(v), 22);

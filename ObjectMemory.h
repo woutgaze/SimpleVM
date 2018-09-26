@@ -14,15 +14,15 @@
 #define BYTE_INDEXED 2
 #define OBJECT_TABLES_BITS 8
 
-typedef struct ClassFormat ClassFormat;
-typedef unsigned int ObjectPointer;
+typedef struct Behavior Behavior;
+typedef uint32_t ObjectPointer;
 
 typedef struct Object {
-    ClassFormat *class;
+    Behavior *class;
 } Object;
 
 typedef struct BytesObject {
-    ClassFormat *class;
+    Behavior *class;
     size_t size;
     char bytes[];
 } BytesObject;
@@ -31,18 +31,36 @@ typedef struct ObjectTableEntry {
     Object *object;
 } ObjectTableEntry;
 
-typedef struct ClassFormat {
-    ClassFormat *superClass;
-    ObjectPointer *object;
-    SizedString name;
-    uint32_t indexedType;
-    CompiledClassSideNode *side;
-} ClassFormat;
+typedef struct Behavior {
+    Behavior *class;
+    ObjectPointer superClass;
+    ObjectPointer methodDict;
+    ObjectPointer format;
+    ObjectPointer subclasses;
+} Behavior;
+
+typedef struct Class {
+    Behavior *class;
+    ObjectPointer superClass;
+    ObjectPointer methodDict;
+    ObjectPointer format;
+    ObjectPointer subclasses;
+    ObjectPointer name;
+} Class;
+
+typedef struct CompiledMethod {
+    Behavior *class;
+    ObjectPointer argumentsSize;
+    ObjectPointer temporariesSize;
+    ObjectPointer maxStackDepth;
+    ObjectPointer instructionsSize;
+    ObjectPointer bytecode;
+} CompiledMethod;
 
 typedef struct {
-    ObjectTableEntry *entries;
     size_t used;
     size_t size;
+    ObjectTableEntry *entries;
 } ObjectTable;
 
 
@@ -51,13 +69,13 @@ typedef struct {
     ObjectPointer nilValue;
     ObjectPointer trueValue;
     ObjectPointer falseValue;
-    ClassFormat *nilClass;
-    ClassFormat *arrayClass;
-    ClassFormat *stringClass;
-    ClassFormat *bytearrayClass;
-    ClassFormat *smallintegerClass;
+    Behavior *nilClass;
+    Behavior *arrayClass;
+    Behavior *stringClass;
+    Behavior *bytearrayClass;
+    Behavior *smallintegerClass;
     size_t nextTableIndex;
-    ObjectTable classTable;
+    ObjectTable classFormatTable;
     ObjectTable *objectTables;
 } ObjectMemory;
 
@@ -95,22 +113,22 @@ void noCheckSetIndexed(Object *obj, size_t index, size_t instVarSize, ObjectPoin
 
 size_t getIndexedSize(Object *obj);
 
-ObjectPointer basicNew(ObjectMemory *om, ClassFormat *class);
+ObjectPointer basicNew(ObjectMemory *om, Behavior *class);
 
-ObjectPointer basicNew_sz(ObjectMemory *om, ClassFormat *class, size_t indexedSize);
+ObjectPointer basicNew_sz(ObjectMemory *om, Behavior *class, size_t indexedSize);
 
-ClassFormat *findClass(ObjectMemory *om, SizedString name);
+Behavior *findClass(ObjectMemory *om, ObjectPointer name);
 
-ClassFormat *createNonMeta(ObjectMemory *om, SizedString name, SizedString superName, uint32_t indexedType,
+Behavior *createNonMeta(ObjectMemory *om, SizedString name, SizedString superName, uint32_t indexedType,
                      CompiledClassSideNode *side);
 
-ClassFormat *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode);
+Behavior *createClassFromNode(ObjectMemory *om, CompiledClassNode *classNode);
 
 void loadClassIfAbsent(ObjectMemory *om, const char *className, const char *bytes);
 
-ClassFormat *createClassNoRegister(ObjectMemory *om, uint32_t indexedType, CompiledClassSideNode *side);
+Behavior *createClassNoRegister(ObjectMemory *om, uint32_t indexedType, CompiledClassSideNode *side);
 
-void registerClass(ObjectMemory *om, ClassFormat *class);
+void registerClass(ObjectMemory *om, Behavior *class);
 
 ObjectMemory *newObjectMemory();
 

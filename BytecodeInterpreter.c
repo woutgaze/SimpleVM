@@ -10,7 +10,7 @@
 #include "SizedString.h"
 
 
-CompiledMethodNode *lookupSelector(ClassFormat *class, SizedString selector) {
+CompiledMethodNode *lookupSelector(Behavior *class, SizedString selector) {
     CompiledMethodNodeArray methods = class->side->methods;
     for (int i = 0; i < methods.size; i++) {
         CompiledMethodNode *method = methods.elements[i];
@@ -26,7 +26,7 @@ CompiledMethodNode *lookupSelector(ClassFormat *class, SizedString selector) {
 Frame *createFrame(ObjectPointer selfp, SizedString selector, ObjectPointer arguments[], Process *process) {
     ObjectMemory *om = process->objectmemory;
     Object *self;
-    ClassFormat *selfClass;
+    Behavior *selfClass;
     if (isSmallInteger(selfp)) {
         self = NULL;
         selfClass = om->smallintegerClass;
@@ -209,7 +209,7 @@ ObjectPointer executePrimArrayAt(int index, ObjectPointer object) {
 }
 
 ObjectPointer executeString(Frame *frame, SizedString string) {
-    ClassFormat *stringClass = frame->process->objectmemory->stringClass;
+    Behavior *stringClass = frame->process->objectmemory->stringClass;
     size_t len = string.size;
     size_t hash = string_hash(string.elements, len);
 
